@@ -1,10 +1,10 @@
 import css from "../css/app.css"
 import "phoenix_html"
-import {Presence} from "phoenix"
+import {Presence,Socket} from "phoenix"
 import * as monaco from "monaco-editor"
-import socket from "./socket"
+//import socket from "./socket"
 class MonacoEditor{
-   editor(params) {
+   editor(userColor) {
     self.MonacoEnvironment = {
       getWorkerUrl: function (moduleId, label) {
         if (label === 'json') {
@@ -29,7 +29,7 @@ class MonacoEditor{
       colors: {
           'editor.foreground': '#000000',
           'editor.background': '#EDF9FA',
-          'editorCursor.foreground': '#8B0000',//received color
+          'editorCursor.foreground': userColor,
           'editor.lineHighlightBackground': '#0000FF20',
           'editorLineNumber.foreground': '#008800',
           'editor.selectionBackground': '#88000030',
@@ -52,14 +52,12 @@ class MonacoEditor{
 }
 class OnlineUsers{
   displayUsers(){
- 
-
-    
+   
     function renderOnlineUsers(presence) {
       let response = ""
-      presence.list((id, {metas: [first, ...rest]}) => {
+      presence.list((user, {metas: [first, ...rest]}) => {
         let count = rest.length + 1
-        response += `<br>${id} (count: ${count})</br>\n`
+        response += `<br>${user} (count: ${count})</br>\n`
       })
       //document.querySelector("main[role=main]")
       let userList=document.getElementById("userList")
@@ -70,14 +68,24 @@ class OnlineUsers{
     channel.join()
   }
 }
-//let user=document.getElementById("user").innerText
-//let socket=new socket("/socket",{params: {user: user}})
-//socket.connect()
+function generateColor(){
+  var letters='0123456789ABCDEF'
+  var color='#'
+  for(var i=0;i<6;i++){
+    color+=letters[Math.floor(Math.random()*16)];
+  }
+  return color;
+}
+
+let user=document.getElementById("user").innerText
+let socket=new Socket("/socket",{params: {user: user}})
+socket.connect()
 let channel = socket.channel("room:lobby", {});
 let presence = new Presence(channel)
+var userColor=generateColor()
 
 const m=new MonacoEditor()
-m.editor()
+m.editor(userColor)
 const u=new OnlineUsers()
 u.displayUsers()
 

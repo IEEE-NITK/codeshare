@@ -15,8 +15,8 @@ defmodule CodeshareWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket, _connect_info) do
-    {:ok, assign(socket, :user_id, Enum.random(0..10))}
+  def connect(%{"user" => user}, socket, _connect_info) do
+    {:ok, assign(socket, :user_id, user)}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
