@@ -3,7 +3,7 @@ defmodule CodeshareWeb.UserSocket do
 
   ## Channels
   # channel "room:*", CodeshareWeb.RoomChannel
-
+  channel "room:lobby", CodeshareWeb.RoomChannel
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
   # verification, you can put default assigns into
@@ -16,7 +16,7 @@ defmodule CodeshareWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+    {:ok, assign(socket, :user_id, Enum.random(0..10))}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
