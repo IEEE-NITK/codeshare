@@ -58,9 +58,11 @@ class MonacoEditor{
         }
     }); 
     channel.on('shout', function(payload){
+            var curpos = editor1.getPosition();
             console.log(payload.evnt);
             editorText=payload.text;
             editor1.setValue(payload.text);
+            editor1.setPosition(curpos);
     });
     }
 }
