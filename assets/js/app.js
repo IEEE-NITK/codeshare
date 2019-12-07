@@ -2,7 +2,8 @@ import css from "../css/app.css"
 import "phoenix_html"
 import {Presence,Socket} from "phoenix"
 import * as monaco from "monaco-editor"
-//import socket from "./socket"
+// import socket from "./socket"
+
 class MonacoEditor{
    editor(userColor) {
     self.MonacoEnvironment = {
@@ -36,8 +37,9 @@ class MonacoEditor{
           'editor.inactiveSelectionBackground': '#88000015'
       }
     });
+    var editor1, editorText;
   monaco.editor.setTheme('myTheme');
-    monaco.editor.create(document.getElementById('container'), {
+    editor1=monaco.editor.create(document.getElementById('container'), {
       value: [
         'function x() {',
         '\tconsole.log("Hello world!");',
@@ -46,13 +48,24 @@ class MonacoEditor{
       language: 'javascript',
       //theme: 'vs-dark'
     });
-
+    editorText=editor1.getValue();
+    editor1.getModel().onDidChangeContent((event) => {
+         if(editorText.localeCompare(editor1.getValue())){
+            channel.push('shout',{
+                evnt: event,
+                text: editor1.getValue()
+            });     
+        }
+    }); 
+    channel.on('shout', function(payload){
+            console.log(payload.evnt);
+            editorText=payload.text;
+            editor1.setValue(payload.text);
+    });
     }
-
 }
 class OnlineUsers{
-  displayUsers(){
-   
+  displayUsers(){ 
     function renderOnlineUsers(presence) {
       let response = ""
       presence.list((user, {metas: [first, ...rest]}) => {
@@ -63,7 +76,10 @@ class OnlineUsers{
       let userList=document.getElementById("userList")
       userList.innerHTML = response
       console.log(response)
+      
+
     }
+        
     presence.onSync(() => renderOnlineUsers(presence))
     channel.join()
   }
@@ -76,6 +92,8 @@ function generateColor(){
   }
   return color;
 }
+
+
 
 let user=document.getElementById("user").innerText
 let socket=new Socket("/socket",{params: {user: user}})
