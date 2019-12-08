@@ -50,19 +50,29 @@ class MonacoEditor{
     });
     editorText=editor1.getValue();
     editor1.getModel().onDidChangeContent((event) => {
-         if(editorText.localeCompare(editor1.getValue())){
-            channel.push('shout',{
-                evnt: event,
-                text: editor1.getValue()
-            });     
-        }
+        channel.push('shout',{
+            evnt: event,
+            op: {
+                identifier: { major: 1, minor: 1 },
+                range: event.changes[0].range,
+                text: event.changes[0].text,
+                forceMoveMarkers: false
+            },
+            text: editor1.getValue()
+        }); 
     }); 
     channel.on('shout', function(payload){
             var curpos = editor1.getPosition();
             console.log(payload.evnt);
+            console.log(payload.op);
             editorText=payload.text;
-            editor1.setValue(payload.text);
-            editor1.setPosition(curpos);
+            console.log(editorText);
+            if(payload.text.localeCompare(editor1.getValue())){
+                editor1.executeEdits("user1", [payload.op]);
+            }
+            console.log(editor1.getValue());
+            // editor1.setValue(payload.text);
+            // editor1.setPosition(curpos);
     });
     }
 }
