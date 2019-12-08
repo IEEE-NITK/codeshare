@@ -80,6 +80,7 @@ class MonacoEditor{
       // }
       
       var decorations = editor1.deltaDecorations([], listOfCursors);
+
     });
     
     }
