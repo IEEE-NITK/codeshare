@@ -53,19 +53,37 @@ class MonacoEditor{
             channel.push('shout',{
                 evnt: event,
                 text: editor1.getValue(),
-                //cursorPosition:editor1.getCursorPosition()
-                
+                updated_cursor_position : editor1.getPosition(),
+                //changed_by: user who made the change               
             });     
         }
     }); 
     channel.on('shout', function(payload){
-            var curpos = editor1.getPosition();
-            console.log(payload.evnt);
-            editorText=payload.text;
-            editor1.setValue(payload.text);
-            editor1.setPosition(curpos);
+      var curpos = editor1.getPosition();
+      
+      console.log(payload.evnt);
+      editorText=payload.text;	            
+      editor1.setValue(payload.text); 
+      editor1.setPosition(curpos);	    
+      console.log(payload.curpos)
+
+      //for showing the cursor position of the user who made the change
+
+      var listOfCursors=[]
+      // cursorPositionList[payload.changed_by]=payload.updated_cursor_position
+      // var style=document.createElement('style');
+      // style.type='text/css';
+      // document.getElementsByTagName('head')[0].appendChild(style);
+      // for(var i=0;i<noOfUsers;i++){
+      //   style.innerHTML='.cursor { background: '+userColors[i]+'; width:2px !important;;}';
+      //   listOfCursors.push({range: new monaco.Range(1,3,1,3), options: { className: 'cursor'}})
+      // }
+      
+      var decorations = editor1.deltaDecorations([], listOfCursors);
     });
+    
     }
+    
 }
 class OnlineUsers{
   displayUsers(){ 
@@ -104,3 +122,4 @@ const m=new MonacoEditor()
 m.editor(userColor)
 const u=new OnlineUsers()
 u.displayUsers()
+//getUserColorMap
