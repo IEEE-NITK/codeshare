@@ -15,7 +15,7 @@ defmodule CodeshareWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(%{"user" => user}, socket, _connect_info) do
+  def connect(%{"user" => user,"userColor" =>userColor}, socket, _connect_info) do
     {:ok, assign(socket, :user_id, user)}
   end
 

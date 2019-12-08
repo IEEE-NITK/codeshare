@@ -1,5 +1,5 @@
 <div id="container" style="width:800px;height:600px;border:1px solid grey"></div>
-<span id="user"><%=@conn.params["user"]%></span>
+Current user:<span id="user"><%=@conn.params["user"]%></span>
 <div id="userList">
     <h2>Users Online:<h2>
     <ul>

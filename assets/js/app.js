@@ -2,7 +2,6 @@ import css from "../css/app.css"
 import "phoenix_html"
 import {Presence,Socket} from "phoenix"
 import * as monaco from "monaco-editor"
-// import socket from "./socket"
 
 class MonacoEditor{
    editor(userColor) {
@@ -53,7 +52,9 @@ class MonacoEditor{
          if(editorText.localeCompare(editor1.getValue())){
             channel.push('shout',{
                 evnt: event,
-                text: editor1.getValue()
+                text: editor1.getValue(),
+                //cursorPosition:editor1.getCursorPosition()
+                
             });     
         }
     }); 
@@ -69,17 +70,12 @@ class OnlineUsers{
     function renderOnlineUsers(presence) {
       let response = ""
       presence.list((user, {metas: [first, ...rest]}) => {
-        let count = rest.length + 1
-        response += `<br>${user} (count: ${count})</br>\n`
+        let cursorColor=first["cursor_color"]
+        response += `<p style="color:${cursorColor};">${user}</p>`
       })
-      //document.querySelector("main[role=main]")
       let userList=document.getElementById("userList")
       userList.innerHTML = response
-      console.log(response)
-      
-
     }
-        
     presence.onSync(() => renderOnlineUsers(presence))
     channel.join()
   }
@@ -96,18 +92,13 @@ function generateColor(){
 
 
 let user=document.getElementById("user").innerText
-let socket=new Socket("/socket",{params: {user: user}})
+var userColor=generateColor()
+
+let socket=new Socket("/socket",{params: {user: user,userColor: userColor}})
 socket.connect()
 let channel = socket.channel("room:lobby", {});
 let presence = new Presence(channel)
-var userColor=generateColor()
-
 const m=new MonacoEditor()
 m.editor(userColor)
 const u=new OnlineUsers()
 u.displayUsers()
-
-/**
- * map users to random cursor colors
- * identify user and pattern match color and send color as parameter to editor
- */
