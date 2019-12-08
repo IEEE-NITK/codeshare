@@ -5,23 +5,41 @@ import * as monaco from "monaco-editor"
 
 class MonacoEditor{
    editor(userColor) {
-    self.MonacoEnvironment = {
-      getWorkerUrl: function (moduleId, label) {
-        if (label === 'json') {
-          return './js/json.worker.js';
-        }
-        if (label === 'css') {
-          return './js/css.worker.js';
-        }
-        if (label === 'html') {
-          return './js/html.worker.js';
-        }
-        if (label === 'typescript' || label === 'javascript') {
-          return './js/ts.worker.js';
-        }
-        return './js/editor.worker.js';
-      }
+// Since packaging is done by you, you need
+// to instruct the editor how you named the
+// bundles that contain the web workers.
+self.MonacoEnvironment = {
+  getWorkerUrl: function (moduleId, label) {
+    if (label === 'json') {
+      return './js/json.worker.js';
     }
+    if (label === 'css') {
+      return './js/css.worker.js';
+    }
+    if (label === 'html') {
+      return './js/html.worker.js';
+    }
+    if (label === 'typescript' || label === 'javascript') {
+      return './js/ts.worker.js';
+    }
+    return './js/editor.worker.js';
+
+    // if (label === 'json') {
+    //     return './json.worker.bundle.js';
+    //   }
+    //   if (label === 'css') {
+    //     return './css.worker.bundle.js';
+    //   }
+    //   if (label === 'html') {
+    //     return './html.worker.bundle.js';
+    //   }
+    //   if (label === 'typescript' || label === 'javascript') {
+    //     return './ts.worker.bundle.js';
+    //   }
+    //   return './editor.worker.bundle.js';
+  }
+}
+
     monaco.editor.defineTheme('myTheme', {
       base: 'vs',
       inherit: true,
