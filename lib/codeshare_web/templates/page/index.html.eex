@@ -32,11 +32,11 @@ function updateMode() {
   var language = document.getElementById("language").value
   console.log(language)
   var mode
-  if(language.includes("text/")) {
-    mode = "clike"
-  }
-  else {
-    mode = language
+  switch(language) {
+    case "text/x-csrc": mode = "clike"; break;
+    case "text/x-c++src": mode = "clike"; break;
+    case "text/x-java": mode = "clike"; break;
+    default: mode = language
   }
   CodeMirror.requireMode(mode, function() {
     cm.setOption("mode", language)
