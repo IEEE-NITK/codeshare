@@ -9,23 +9,37 @@
 <script>
 var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
   lineNumbers: true,
+  // theme: "3024-night",
   theme: "darcula",
 })
 CodeMirror.modeURL = "<%= Routes.static_path(@conn, "/codemirror/mode/%N/%N.js") %>"
+CodeMirror.requireMode("python", function() {
+  cm.setOption("mode", "python")
+  CodeMirror.autoLoadMode(cm, "python")
+})
 </script>
 
-<select id="selectMode" onChange="updateMode()">
+<select id="language" onChange="updateMode()">
   <option value="python" selected>Python</option>
   <option value="javascript">Javascript</option>
-  <option value="clike">C/C++</option>
+  <option value="text/x-csrc">C</option>
+  <option value="text/x-c++src">C++</option>
+  <option value="text/x-java">Java</option>
 </select>
 
 <script>
 function updateMode() {
-  var mode = document.getElementById("selectMode").value
-  console.log(mode)
+  var language = document.getElementById("language").value
+  console.log(language)
+  var mode
+  if(language.includes("text/")) {
+    mode = "clike"
+  }
+  else {
+    mode = language
+  }
   CodeMirror.requireMode(mode, function() {
-    cm.setOption("mode", mode)
+    cm.setOption("mode", language)
     CodeMirror.autoLoadMode(cm, mode)
   })
 }
