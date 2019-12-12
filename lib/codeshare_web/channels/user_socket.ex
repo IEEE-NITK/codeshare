@@ -1,8 +1,12 @@
 defmodule CodeshareWeb.UserSocket do
-  use Phoenix.Socket
+  use Phoenix.Socket, log: :debug
 
   ## Channels
-  # channel "room:*", CodeshareWeb.RoomChannel
+  channel "room:lobby", CodeshareWeb.RoomChannel
+
+  ## Transports
+  transport :websocket, Phoenix.Transports.WebSocket
+  # transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -15,8 +19,9 @@ defmodule CodeshareWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+  def connect(%{"user" => user,"userColor" =>userColor}, socket, _connect_info) do
+    socket=assign(socket,:user_color,userColor)
+    {:ok, assign(socket, :user_name, user)}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -29,5 +34,10 @@ defmodule CodeshareWeb.UserSocket do
   #     CodeshareWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
+  #def id(_socket), do: nil
+  def id(socket) do
+      IO.inspect socket.assigns.user_name
+     "user_socket:#{socket.assigns.user_name}"
+  end
+  
 end
