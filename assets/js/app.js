@@ -1,7 +1,7 @@
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
-
+//import css from "../css/codemirror.css"
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured
 // in "webpack.config.js".
@@ -12,17 +12,7 @@ import "phoenix_html"
 
 
 // Import local files
-//
-// Local files can be imported directly using relative paths, for example:
-// import socket from "./socket"
-// import "./addon/edit/closebrackets.js"
-// import "./addon/display/fullscreen.js"
-// import "./addon/display/fullscreen.css"
-// import "./mode/javascript/javascript.js"
-// import "./mode/python/python.js"
-// import "./theme/darcula.css"
-// import "./addon/edit/matchbrackets.js"
-// import "./addon/edit/matchtags.js"
+
 import { Presence, Socket } from "phoenix"
 
 function displayUsers() {
@@ -31,11 +21,25 @@ function displayUsers() {
         presence.list((user, { metas: [first, ...rest] }) => {
             let cursorColor = first["cursor_color"]
             response += `<p style="color:${cursorColor};">${user}</p>`
+            if(!first["has_cursor"]){
+                const cursorCoords = { ch: 0, line: 0 };
+                var cursorElement = document.createElement('span');
+                cursorElement.style.borderLeftStyle = 'solid';
+                cursorElement.style.borderLeftWidth = '3px';
+                cursorElement.style.borderLeftColor = cursorColor;
+                cursorElement.style.height = `${(cursorCoords.bottom - cursorCoords.top)}px`;
+                cursorElement.style.padding = 0;
+                cursorElement.style.zIndex = 0;
+                markers[user] = cm.setBookmark(cursorCoords, { widget: cursorElement });
+                first["has_cursor"]=true;
+            }
         })
         let userList = document.getElementById("userList")
         userList.innerHTML = response
     }
-    presence.onSync(() => renderOnlineUsers(presence))
+    presence.onSync(() => 
+    renderOnlineUsers(presence)
+    )
 }
 
 function generateColor() {
@@ -51,6 +55,7 @@ function generateColor() {
     else return "yellow"
 }
 
+var cm=window.cm
 
 let user = document.getElementById("user").innerText
 var userColor = generateColor()
@@ -62,24 +67,6 @@ displayUsers()
 channel.join()
 var markers = {}
 
-channel.push("createCursor", {})
-
-channel.on("createCursor", function (payload) {
-    console.log(markers)
-    if (user != payload.user_name) {
-        const cursorCoords = { ch: 0, line: 0 };
-        var cursorElement = document.createElement('span');
-        cursorElement.style.borderLeftStyle = 'solid';
-        cursorElement.style.borderLeftWidth = '3px';
-        cursorElement.style.borderLeftColor = payload.user_color;
-        cursorElement.style.height = `${(cursorCoords.bottom - cursorCoords.top)}px`;
-        cursorElement.style.padding = 0;
-        cursorElement.style.zIndex = 0;
-        markers[payload.user_name] = cm.setBookmark(cursorCoords, { widget: cursorElement });
-    }
-})
-
-var cm=window.cm
 cm.on("beforeChange", (cm, changeobj) => {
     console.log(changeobj);
     if (changeobj.origin != undefined) {
@@ -110,7 +97,10 @@ channel.on("updateCursor", function (payload) {
             markers[payload.user_name].clear();
         }
         markers[payload.user_name] = cm.setBookmark(payload.cursorPos, { widget: cursor });
-        // markers[payload.user_name].clearWhenEmpty=true;
+        
+    }
+    else{
+        markers[payload.user_name].clearWhenEmpty=true;
     }
 })
 channel.on('shout', function (payload) {

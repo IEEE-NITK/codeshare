@@ -1,5 +1,5 @@
 defmodule CodeshareWeb.UserSocket do
-  use Phoenix.Socket, log: :debug
+  use Phoenix.Socket
 
   ## Channels
   channel "room:lobby", CodeshareWeb.RoomChannel

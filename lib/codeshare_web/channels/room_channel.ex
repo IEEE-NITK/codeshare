@@ -12,7 +12,7 @@ defmodule CodeshareWeb.RoomChannel do
     def handle_info(:after_join, socket) do
       push(socket, "presence_state", Presence.list(socket))
       userColor= socket.assigns.user_color
-      {:ok, _} = Presence.track(socket, socket.assigns.user_name, %{cursor_color: userColor})
+      {:ok, _} = Presence.track(socket, socket.assigns.user_name, %{cursor_color: userColor, has_cursor: false})
       {:noreply, socket}
     end
   
@@ -35,15 +35,15 @@ defmodule CodeshareWeb.RoomChannel do
       {:noreply, socket}
     end
   
-    def handle_in("createCursor", payload, socket) do
-      payload = Map.put(payload, "user_name", socket.assigns.user_name)
-      payload=Map.put(payload,"user_color",socket.assigns.user_color)
-      broadcast socket, "createCursor", payload
-      {:noreply, socket}
-    end
+    # def handle_in("createCursor", payload, socket) do
+    #   payload = Map.put(payload, "user_name", socket.assigns.user_name)
+    #   payload=Map.put(payload,"user_color",socket.assigns.user_color)
+    #   broadcast socket, "createCursor", payload
+    #   {:noreply, socket}
+    # end
     # Add authorization logic here as required.
     defp authorized?(_payload) do
       true
     end
   end
-  
+   
