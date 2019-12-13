@@ -1,7 +1,7 @@
 // We need to import the CSS so that webpack will load it.
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
-//import css from "../css/codemirror.css"
+import css from "../css/app.css"
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured
 // in "webpack.config.js".
@@ -21,18 +21,6 @@ function displayUsers() {
         presence.list((user, { metas: [first, ...rest] }) => {
             let cursorColor = first["cursor_color"]
             response += `<p style="color:${cursorColor};">${user}</p>`
-            if(!first["has_cursor"]){
-                const cursorCoords = { ch: 0, line: 0 };
-                var cursorElement = document.createElement('span');
-                cursorElement.style.borderLeftStyle = 'solid';
-                cursorElement.style.borderLeftWidth = '3px';
-                cursorElement.style.borderLeftColor = cursorColor;
-                cursorElement.style.height = `${(cursorCoords.bottom - cursorCoords.top)}px`;
-                cursorElement.style.padding = 0;
-                cursorElement.style.zIndex = 0;
-                markers[user] = cm.setBookmark(cursorCoords, { widget: cursorElement });
-                first["has_cursor"]=true;
-            }
         })
         let userList = document.getElementById("userList")
         userList.innerHTML = response
@@ -41,6 +29,7 @@ function displayUsers() {
     renderOnlineUsers(presence)
     )
 }
+
 
 function generateColor() {
     // var letters = '0123456789ABCDEF'
@@ -66,7 +55,13 @@ let presence = new Presence(channel)
 displayUsers()
 channel.join()
 var markers = {}
-
+presence.onLeave((id,current,leftPres) =>{
+    if(current.metas.length==0){
+        markers[id].clear()
+       delete markers[id]
+       // console.log(typeof markers)
+    }
+})
 cm.on("beforeChange", (cm, changeobj) => {
     console.log(changeobj);
     if (changeobj.origin != undefined) {
@@ -85,8 +80,10 @@ cm.on("cursorActivity", (cm) => {
     });
 });
 channel.on("updateCursor", function (payload) {
+    console.log(markers)
+    var cursor = document.createElement('span');
+
     if (user != payload.user_name) {
-        var cursor = document.createElement('span');
         cursor.style.borderLeftStyle = 'solid';
         cursor.style.borderLeftWidth = '3px';
         cursor.style.borderLeftColor = payload.cursorColor;
@@ -97,10 +94,9 @@ channel.on("updateCursor", function (payload) {
             markers[payload.user_name].clear();
         }
         markers[payload.user_name] = cm.setBookmark(payload.cursorPos, { widget: cursor });
-        
     }
-    else{
-        markers[payload.user_name].clearWhenEmpty=true;
+    if(markers[payload.user_name] != undefined && user==payload.user_name){
+        markers[payload.user_name].clear();
     }
 })
 channel.on('shout', function (payload) {
@@ -109,3 +105,15 @@ channel.on('shout', function (payload) {
         cm.replaceRange(payload.changeobj.text, payload.changeobj.from, payload.changeobj.to);
     }
 })
+
+
+
+
+
+
+
+
+
+
+
+
