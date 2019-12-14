@@ -13,6 +13,7 @@ import "phoenix_html"
 // Import local files
 
 import { Presence, Socket } from "phoenix"
+import crdt from "./crdt"
 
 var cm = window.cm // cm: CodeMirror
 
