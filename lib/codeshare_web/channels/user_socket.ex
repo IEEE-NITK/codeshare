@@ -5,7 +5,7 @@ defmodule CodeshareWeb.UserSocket do
   channel "room:lobby", CodeshareWeb.RoomChannel
 
   ## Transports
-  transport :websocket, Phoenix.Transports.WebSocket
+  transport(:websocket, Phoenix.Transports.WebSocket)
   # transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can
@@ -19,8 +19,8 @@ defmodule CodeshareWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(%{"user" => user,"userColor" =>userColor}, socket, _connect_info) do
-    socket=assign(socket,:user_color,userColor)
+  def connect(%{"user" => user, "userColor" => userColor}, socket, _connect_info) do
+    socket = assign(socket, :user_color, userColor)
     {:ok, assign(socket, :user_name, user)}
   end
 
@@ -34,10 +34,9 @@ defmodule CodeshareWeb.UserSocket do
   #     CodeshareWeb.Endpoint.broadcast("user_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  #def id(_socket), do: nil
+  # def id(_socket), do: nil
   def id(socket) do
-      IO.inspect socket.assigns.user_name
-     "user_socket:#{socket.assigns.user_name}"
+    IO.inspect(socket.assigns.user_name)
+    "user_socket:#{socket.assigns.user_name}"
   end
-  
 end
