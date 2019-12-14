@@ -85,7 +85,7 @@ channel.on("updateCursor", function (payload) {
 
     if (user != payload.user_name) {
         cursor.style.borderLeftStyle = 'solid';
-        cursor.style.borderLeftWidth = '3px';
+        cursor.style.borderLeftWidth = '1px';
         cursor.style.borderLeftColor = payload.cursorColor;
         cursor.style.height = `${(payload.cursorPos.bottom - payload.cursorPos.top)}px`;
         cursor.style.padding = 0;
@@ -93,7 +93,7 @@ channel.on("updateCursor", function (payload) {
         if (markers[payload.user_name] != undefined) {
             markers[payload.user_name].clear();
         }
-        markers[payload.user_name] = cm.setBookmark(payload.cursorPos, { widget: cursor });
+        markers[payload.user_name] = cm.setBookmark(payload.cursorPos, { widget: cursor , handleMouseEvents: true});
     }
     if(markers[payload.user_name] != undefined && user==payload.user_name){
         markers[payload.user_name].clear();
