@@ -4,7 +4,7 @@
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/lib/codemirror.js") %>"></script>
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/addon/mode/loadmode.js") %>"></script>
 
-<textarea id="editor"> whatever</textarea>
+<textarea id="editor"> </textarea>
 
 <script>
 var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
@@ -44,3 +44,8 @@ function updateMode() {
   })
 }
 </script>
+Current user:<span id="user"><%=@conn.params["user"]%></span>
+<div >
+    <h2>Users Online:<h2>
+    <ul id="userList"></ul>
+</div>
