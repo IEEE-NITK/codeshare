@@ -338,7 +338,7 @@ class CRDT {
     }
 
     /**
-     * Insert `character` in the CRDT structuer
+     * Insert `character` in the CRDT structure
      * @param {Character} character 
      * @result {Number} lineNumber
      */
@@ -349,8 +349,8 @@ class CRDT {
         var lineNumber;
         for(lineNumber = 0; lineNumber < this.data.length; lineNumber++) {
             var lineLength = this.data[lineNumber].length;
+            //identify the position in the line where the character fits
             if(this.data[lineNumber][lineLength-1].isGreaterThan(charCopy)) {
-                //identify the position in the line where the character fits
                 var pos;
                 for(pos = 0; pos < lineLength; pos++) {
                     var c = this.data[lineNumber][pos];    
@@ -377,8 +377,8 @@ class CRDT {
         var lineNumber;
         for(lineNumber = 0; lineNumber<this.data.length; lineNumber++) {
             var lineLength = this.data[lineNumber].length;
+            //identify the position in the line where the character is present
             if(this.data[lineNumber][lineLength-1].isGreaterThan(charCopy)) {
-                //identify the position in the line where the character is present
                 for(let pos = 0; pos < lineLength; pos++) {
                     var c = this.data[lineNumber][pos];
                     if(c.isEqualTo(charCopy)) {
@@ -392,6 +392,76 @@ class CRDT {
         //return the line number to update in codemirror
         return lineNumber;
     }
+
+    /**
+     * Insert a newline using `character` at its appropriate position in CRDT
+     * @param {Character} character 
+     * @result {Number} lineNumber
+     */
+    remoteInsertNewline(character) {
+        var charCopy = new Character(character.ch, parseIdentifiers(character.identifiers));
+        
+        //identify the line an which to insert the newline character by comparing against last character in the lines
+        var lineNumber;
+        for(lineNumber = 0; lineNumber < this.data.length; lineNumber++) {
+            var lineLength = this.data[lineNumber].length;
+            //identify the position in the line where the character fits
+            if(this.data[lineNumber][lineLength-1].isGreaterThan(charCopy)) {
+                var pos;
+                for(pos = 0; pos < lineLength; pos++) {
+                    var c = this.data[lineNumber][pos];
+                    if(!charCopy.isGreaterThan(c))
+                        break;
+                }
+                //create the newline characters
+                var beginCharacter = new Character('', parseIdentifiers(charCopy.identifiers));
+                var endCharacter = new Character('', parseIdentifiers(charCopy.identifiers));
+                //split the line into two
+                this.data.splice(lineNumber+1, 0, this.data[lineNumber].splice(pos));
+                //insert the newline characters
+                this.data[lineNumber].push(endCharacter);
+                this.data[lineNumber+1].unshift(beginCharacter);
+                break;
+            }
+        }
+        //return the line number to update in codemirror
+        return lineNumber;
+    }
+
+    /**
+     * Delete the newline character `character` in CRDT
+     * @param {Character} character 
+     * @result {Number} lineNumber
+     */
+    remoteDeleteNewline(character) {
+        var cchar = new Character(character.ch, parseIdentifiers(character.identifiers))
+
+        //identify the line which has the newline character by comparing against last character in the lines
+        var lineNumber;
+        for(lineNumber = 0; lineNumber<this.data.length; lineNumber++) {
+            var lineLength = this.data[lineNumber].length;
+            //identify the position in the line where the character is present
+            if(this.data[lineNumber][lineLength-1].isEqualTo(cchar)) {
+                this.data[lineNumber].pop();
+                //Remove line `lineNumber+1`
+                var lineToMerge = this.data.splice(lineNumber+1, 1)[0];
+                //Remove 'starting' character from line to be merged
+                lineToMerge.shift();
+                //Merge `lineToMerge` to line `lineNumber` by offseting each character in `lineToMerge`
+                for(var c of lineToMerge) {
+                    this.data[lineNumber].push(c);
+                }
+                break;
+            }
+            //identify if the newline character has been deleted already or does not exist
+            else if(this.data[lineNumber][lineLength-1].isGreaterThan(cchar)) {
+                break;
+            }
+        }
+        //return the line number to update in codemirror
+        return lineNumber;
+    }
+    
 
     /**
      * Get string representation of `CRDT`.
