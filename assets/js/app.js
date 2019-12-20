@@ -36,16 +36,15 @@ var markers = {}
 
 // Send my changes to others
 cm.on("beforeChange", (cm, changeobj) => {
-    console.log(changeobj);
     if (changeobj.origin != undefined) {
-
+    
         if(changeobj.origin == "+input") {
             //select and insert => delete selected stuff first
             if(changeobj.from.line != changeobj.to.line || changeobj.from.ch != changeobj.to.ch) {
-                for(var i = changeObj.to.line; i >= changeObj.from.line; i--) {
+                for(var i = changeobj.to.line; i >= changeobj.from.line; i--) {
                     //identifying the begin and end position 
-                    var begin = ((i==changeObj.from.line) ? (changeObj.from.ch) : 0)
-                    var end = ((i==changeObj.to.line) ? (changeObj.to.ch) : (crdt.data[i].length-2))
+                    var begin = ((i==changeobj.from.line) ? (changeobj.from.ch) : 0)
+                    var end = ((i==changeobj.to.line) ? (changeobj.to.ch) : (crdt.data[i].length-2))
 
                     //deleting the characters
                     for(var j = end-1; j >= begin; j--) {
@@ -53,42 +52,46 @@ cm.on("beforeChange", (cm, changeobj) => {
                         channel.push("shout", {
                             type: "delete",
                             character: tempCharacter,
+                            user: user
                         })
                     }
 
                     //deleting newline if selection included multiple lines
-                    if(i != changeObj.to.line) {
+                    if(i != changeobj.to.line) {
                         var tempCharacter = crdt.localDeleteNewline(i); 
                         channel.push("shout", {
                             type: "deletenewline",
                             character: tempCharacter,
+                            user: user
                         })
                     }
                 }
             }
             //newline insertion
-            if(changeObj.text.length > 1) {
-                var tempCharacter = crdt.localInsertNewline(changeObj.from.line, changeObj.from.ch, user);
+            if(changeobj.text.length > 1) {
+                var tempCharacter = crdt.localInsertNewline(changeobj.from.line, changeobj.from.ch, user);
                 channel.push("shout", {
                     type: "inputnewline",
                     character: tempCharacter,
+                    user: user
                 })
             }
             //single insertion (normal case)
             else{
-                var tempCharacter = crdt.localInsert(changeObj.text[0], changeObj.from.line, changeObj.from.ch, user)
+                var tempCharacter = crdt.localInsert(changeobj.text[0], changeobj.from.line, changeobj.from.ch, user)
                 channel.push("shout", {
                     type: "input",
                     character: tempCharacter,
+                    user: user
                 })
             }
         }
 
         else if(changeobj.origin == "+delete") {
-            for(var i = changeObj.to.line; i >= changeObj.from.line; i--) {
+            for(var i = changeobj.to.line; i >= changeobj.from.line; i--) {
                 //identifying the begin and end position 
-                var begin = ((i==changeObj.from.line) ? (changeObj.from.ch) : 0)
-                var end = ((i==changeObj.to.line) ? (changeObj.to.ch) : (crdt.data[i].length-2))
+                var begin = ((i==changeobj.from.line) ? (changeobj.from.ch) : 0)
+                var end = ((i==changeobj.to.line) ? (changeobj.to.ch) : (crdt.data[i].length-2))
 
                 //deleting the characters
                 for(var j = end-1; j >= begin; j--) {
@@ -96,15 +99,17 @@ cm.on("beforeChange", (cm, changeobj) => {
                     channel.push("shout", {
                         type: "delete",
                         character: tempCharacter,
+                        user: user
                     })
                 }
 
                 //deleting newline if selection included multiple lines
-                if(i != changeObj.to.line) {
+                if(i != changeobj.to.line) {
                     var tempCharacter = crdt.localDeleteNewline(i)
                     channel.push("shout", {
                         type: "deletenewline",
                         character: tempCharacter,
+                        user: user
                     })
                 }
             }
@@ -115,7 +120,7 @@ cm.on("beforeChange", (cm, changeobj) => {
         }
         
         else{
-            alert("Unhandled case. Send changeobj from console to developer")
+            alert("Unhandled case. Inform developer")
             changeobj.cancel()
         }
     }
@@ -159,7 +164,7 @@ cm.on("cursorActivity", (cm) => {
 
 // Receive cursor update from other users
 channel.on("updateCursor", function (payload) {
-    console.log(markers)
+    // console.log(markers)
     var cursor = document.createElement('span');
 
     if (user != payload.user_name) {

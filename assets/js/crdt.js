@@ -265,7 +265,6 @@ class CRDT {
     localInsert(ch, lineNumber, pos, siteID) {
 
         pos = pos + 1;
-
         var prevIdentifierList = this.data[lineNumber][pos-1].identifiers;
         var nextIdentifierList = this.data[lineNumber][pos].identifiers;
         
@@ -462,6 +461,18 @@ class CRDT {
         return lineNumber;
     }
     
+    /**
+     * Converts a line of CRDT into editor compliant line
+     * @param  {Number} lineNumber
+     */
+    getUpdatedLine(lineNumber) {
+        var characters = this.data[lineNumber];
+        var lineString = ""; 
+        for(let c of characters) {
+            lineString += c.ch;
+        }
+        return lineString;
+    }
 
     /**
      * Get string representation of `CRDT`.
