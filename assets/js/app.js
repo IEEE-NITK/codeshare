@@ -34,22 +34,108 @@ var markers = {}
 
 /*** Send and recieve editor changes ***/
 
-// Apply changes from others
+// Send my changes to others
 cm.on("beforeChange", (cm, changeobj) => {
     console.log(changeobj);
     if (changeobj.origin != undefined) {
-        channel.push('shout', {
-            changeobj: changeobj,
-            user: user
-        });
+        if(changeobj.origin == "+input") {
+            //select and insert => delete selected stuff first
+            if(changeobj.from.line != changeobj.to.line || changeobj.from.ch != changeobj.to.ch) {
+                for(var i = changeObj.to.line; i >= changeObj.from.line; i--) {
+                    //identifying the begin and end position 
+                    var begin = ((i==changeObj.from.line) ? (changeObj.from.ch) : 0)
+                    var end = ((i==changeObj.to.line) ? (changeObj.to.ch) : (crdt.data[i].length-2))
+
+                    //deleting the characters
+                    for(var j = end-1; j >= begin; j--) {
+                        var tempCharacter = crdt.localDelete(i, j)
+                        channel.push("shout", {
+                            type: "delete",
+                            character: tempCharacter,
+                        })
+                    }
+                    
+                    //deleting newline if selection included multiple lines
+                    if(i != changeObj.to.line) {
+                        var tempCharacter = crdt.localDeleteNewline(i); 
+                        channel.push("shout", {
+                            type: "deletenewline",
+                            character: tempCharacter,
+                        })
+                    }
+                }
+            }
+            //newline insertion
+            if(changeObj.text.length > 1) {
+                var tempCharacter = crdt.localInsertNewline(changeObj.from.line, changeObj.from.ch, user);
+                channel.push("shout", {
+                    type: "inputnewline",
+                    character: tempCharacter,
+                })
+            }
+            //single insertion (normal case)
+            else{
+                var tempCharacter = crdt.localInsert(changeObj.text[0], changeObj.from.line, changeObj.from.ch, user)
+                channel.push("shout", {
+                    type: "input",
+                    character: tempCharacter,
+                })
+            }
+        }
+        else if(changeobj.origin == "+delete") {
+            for(var i = changeObj.to.line; i >= changeObj.from.line; i--) {
+                //identifying the begin and end position 
+                var begin = ((i==changeObj.from.line) ? (changeObj.from.ch) : 0)
+                var end = ((i==changeObj.to.line) ? (changeObj.to.ch) : (crdt.data[i].length-2))
+
+                //deleting the characters
+                for(var j = end-1; j >= begin; j--) {
+                    var tempCharacter = crdt.localDelete(i, j)
+                    channel.push("shout", {
+                        type: "delete",
+                        character: tempCharacter,
+                    })
+                }
+
+                //deleting newline if selection included multiple lines
+                if(i != changeObj.to.line) {
+                    var tempCharacter = crdt.localDeleteNewline(i)
+                    channel.push("shout", {
+                        type: "deletenewline",
+                        character: tempCharacter,
+                    })
+                }
+            }
+        }
+        else if(changeobj.origin == "+paste") {
+
+        }
+        else{
+            alert("Unhandled case. Send changeobj from console to developer")
+            changeobj.cancel()
+        }
     }
 })
 
-// Send my changes to others
+// Apply changes from others
 channel.on('shout', function (payload) {
     console.log(payload.changeobj);
     if (user != payload.user) {
-        cm.replaceRange(payload.changeobj.text, payload.changeobj.from, payload.changeobj.to);
+        if(payload.type == "input") {
+
+        }
+        else if(payload.type == "delete") {
+
+        }
+        else if(payload.type == "inputnewline") {
+
+        }
+        else if(payload.type == "deletenewline") {
+
+        }
+        else{
+            alert("Unhandled case. Send changeobj from console to developer")
+        }
     }
 })
 
