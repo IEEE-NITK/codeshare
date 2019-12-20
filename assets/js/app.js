@@ -38,6 +38,7 @@ var markers = {}
 cm.on("beforeChange", (cm, changeobj) => {
     console.log(changeobj);
     if (changeobj.origin != undefined) {
+
         if(changeobj.origin == "+input") {
             //select and insert => delete selected stuff first
             if(changeobj.from.line != changeobj.to.line || changeobj.from.ch != changeobj.to.ch) {
@@ -82,6 +83,7 @@ cm.on("beforeChange", (cm, changeobj) => {
                 })
             }
         }
+
         else if(changeobj.origin == "+delete") {
             for(var i = changeObj.to.line; i >= changeObj.from.line; i--) {
                 //identifying the begin and end position 
@@ -107,9 +109,11 @@ cm.on("beforeChange", (cm, changeobj) => {
                 }
             }
         }
+
         else if(changeobj.origin == "+paste") {
 
         }
+        
         else{
             alert("Unhandled case. Send changeobj from console to developer")
             changeobj.cancel()
@@ -119,7 +123,6 @@ cm.on("beforeChange", (cm, changeobj) => {
 
 // Apply changes from others
 channel.on('shout', function (payload) {
-    console.log(payload.changeobj);
     if (user != payload.user) {
         if(payload.type == "input") {
             var modifiedLine = crdt.remoteInsert(payload.character)
@@ -137,9 +140,6 @@ channel.on('shout', function (payload) {
         else if(payload.type == "deletenewline") {
             var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
             cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
-        }
-        else{
-            alert("Unhandled case. Send changeobj from console to developer")
         }
     }
 })
