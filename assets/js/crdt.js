@@ -60,6 +60,23 @@ function createIdentifierList(list = []) {
     return identifierList;
 }
 
+/**
+ * 
+ * @param {List{List[2]}} list=[]
+ */
+function parseIdentifiers(list = []) {
+    var identifierList = []
+    for(let l of list) {
+        var temp;
+        if(l.siteID == null)
+            temp = Infinity;
+        else
+            temp = l.siteID;
+        identifierList.push(new Identifier(l.position, temp))
+    }
+    return identifierList;
+}
+
 //NOTE: Element would be a better name
 class Character {
     /**
@@ -318,6 +335,62 @@ class CRDT {
         }
         //return the character removed
         return endCharacter;
+    }
+
+    /**
+     * Insert `character` in the CRDT structuer
+     * @param {Character} character 
+     * @result {Number} lineNumber
+     */
+    remoteInsert(character) { //Binary search insertion [pointless since splice will be O(n)]
+        var charCopy = new Character(character.ch, parseIdentifiers(character.identifiers));
+        
+        //identify the line in which the character fits by comparing against last character in the lines
+        var lineNumber;
+        for(lineNumber = 0; lineNumber < this.data.length; lineNumber++) {
+            var lineLength = this.data[lineNumber].length;
+            if(this.data[lineNumber][lineLength-1].isGreaterThan(charCopy)) {
+                //identify the position in the line where the character fits
+                var pos;
+                for(pos = 0; pos < lineLength; pos++) {
+                    var c = this.data[lineNumber][pos];    
+                    if(!charCopy.isGreaterThan(c))
+                        break;
+                }
+                this.data[lineNumber].splice(pos, 0, charCopy);
+                break;
+            }
+        }
+        //return the line number to update in codemirror
+        return lineNumber;
+    }
+
+    /**
+     * Delete the `character` received from the CRDT structure if present
+     * @param {Character} character 
+     * @result {Number} lineNumber
+     */
+    remoteDelete(character) { //Binary search insertion [pointless since splice will be O(n)]
+        var charCopy = new Character(character.ch, parseIdentifiers(character.identifiers))
+        
+        //identify the line in which the character is present by comparing against last character in the lines
+        var lineNumber;
+        for(lineNumber = 0; lineNumber<this.data.length; lineNumber++) {
+            var lineLength = this.data[lineNumber].length;
+            if(this.data[lineNumber][lineLength-1].isGreaterThan(charCopy)) {
+                //identify the position in the line where the character is present
+                for(let pos = 0; pos < lineLength; pos++) {
+                    var c = this.data[lineNumber][pos];
+                    if(c.isEqualTo(charCopy)) {
+                        this.data[lineNumber].splice(pos, 1);
+                        break;
+                    } 
+                }
+                break;
+            }
+        }
+        //return the line number to update in codemirror
+        return lineNumber;
     }
 
     /**
