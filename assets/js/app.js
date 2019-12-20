@@ -54,7 +54,7 @@ cm.on("beforeChange", (cm, changeobj) => {
                             character: tempCharacter,
                         })
                     }
-                    
+
                     //deleting newline if selection included multiple lines
                     if(i != changeObj.to.line) {
                         var tempCharacter = crdt.localDeleteNewline(i); 
@@ -122,16 +122,21 @@ channel.on('shout', function (payload) {
     console.log(payload.changeobj);
     if (user != payload.user) {
         if(payload.type == "input") {
-
+            var modifiedLine = crdt.remoteInsert(payload.character)
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
         }
         else if(payload.type == "delete") {
-
+            var modifiedLine = crdt.remoteDelete(payload.character)
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
         }
         else if(payload.type == "inputnewline") {
-
+            var modifiedLine = crdt.remoteInsertNewline(payload.character)
+            cm.replaceRange([crdt.getUpdatedLine(modifiedLine), ""], {line: modifiedLine, ch:0}, {line: modifiedLine})
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine+1), {line: modifiedLine+1, ch:0}, {line: modifiedLine+1})
         }
         else if(payload.type == "deletenewline") {
-
+            var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
         }
         else{
             alert("Unhandled case. Send changeobj from console to developer")
