@@ -273,6 +273,54 @@ class CRDT {
     }
 
     /**
+     * Insert a newline character int line `lineNumber` and at position `pos`
+     * @param  {Number} lineNumber
+     * @param  {Number} pos
+     * @result {Character}
+     */
+    localInsertNewline(lineNumber, pos) {
+        pos = pos + 1;
+
+        var prevIdentifierList = this.data[lineNumber][pos-1].identifiers;
+        var nextIndentifierList = this.data[lineNumber][pos].identifiers;
+    
+        //find the next greater identifier list which becomes the identifier list for the newline characters
+        var newIdentifierList = this.findNextGreaterIdentifierList(prevIdentifierList, nextIndentifierList, -1);
+        var beginCharacter = new Character('', newIdentifierList);
+        var endCharacter = new Character('', newIdentifierList);
+
+        //insert the newline character
+        this.data.splice(lineNumber+1, 0, this.data[lineNumber].splice(pos));
+        this.data[lineNumber].push(endCharacter);
+        this.data[lineNumber+1].unshift(beginCharacter);
+        
+        //return the newline character generated
+        return beginCharacter;
+    }
+
+    /**
+     * Deletes new line at the end of line `lineNumber`.
+     * Merges line `lineNumber+1` at the end of `lineNumber`
+     * @param  {Number} lineNumber
+     * @result {Character} endCharacter
+     */
+    localDeleteNewline(lineNumber) {
+        var endCharacter = this.data[lineNumber].pop();
+
+        //Remove line `lineNumber+1
+        var lineToMerge = this.data.splice(lineNumber+1, 1)[0];
+        //Remove 'starting' character from line to be merged
+        lineToMerge.shift();
+        //Merge `lineToMerge` to line `lineNumber` by offseting each character in `lineToMerge`
+        for(var character of lineToMerge) {
+            var modifiedCharacter = character;
+            this.data[lineNumber].push(modifiedCharacter);
+        }
+        //return the character removed
+        return endCharacter;
+    }
+
+    /**
      * Get string representation of `CRDT`.
      * Useful for debugging.
      */
