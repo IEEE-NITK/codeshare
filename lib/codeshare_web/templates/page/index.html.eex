@@ -4,7 +4,7 @@
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/lib/codemirror.js") %>"></script>
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/addon/mode/loadmode.js") %>"></script>
 
-<textarea id="editor"> </textarea>
+<textarea id="editor"></textarea>
 
 <script>
 var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
