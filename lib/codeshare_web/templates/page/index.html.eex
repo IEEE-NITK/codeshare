@@ -1,35 +1,51 @@
-<section class="phx-hero">
-  <h1><%= gettext "Welcome to %{name}!", name: "Phoenix" %></h1>
-  <p>A productive web framework that<br/>does not compromise speed or maintainability.</p>
-</section>
+<link rel="stylesheet" href="<%= Routes.static_path(@conn, "/codemirror/lib/codemirror.css") %>"/>
+<link rel="stylesheet" href="<%= Routes.static_path(@conn, "/codemirror/theme/darcula.css") %>"/>
 
-<section class="row">
-  <article class="column">
-    <h2>Resources</h2>
-    <ul>
-      <li>
-        <a href="https://hexdocs.pm/phoenix/overview.html">Guides &amp; Docs</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix">Source</a>
-      </li>
-      <li>
-        <a href="https://github.com/phoenixframework/phoenix/blob/v1.4/CHANGELOG.md">v1.4 Changelog</a>
-      </li>
-    </ul>
-  </article>
-  <article class="column">
-    <h2>Help</h2>
-    <ul>
-      <li>
-        <a href="https://elixirforum.com/c/phoenix-forum">Forum</a>
-      </li>
-      <li>
-        <a href="https://webchat.freenode.net/?channels=elixir-lang">#elixir-lang on Freenode IRC</a>
-      </li>
-      <li>
-        <a href="https://twitter.com/elixirphoenix">Twitter @elixirphoenix</a>
-      </li>
-    </ul>
-  </article>
-</section>
+<script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/lib/codemirror.js") %>"></script>
+<script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/addon/mode/loadmode.js") %>"></script>
+
+<textarea id="editor"></textarea>
+
+<script>
+var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
+  lineNumbers: true,
+  // theme: "3024-night",
+  theme: "darcula",
+})
+CodeMirror.modeURL = "<%= Routes.static_path(@conn, "/codemirror/mode/%N/%N.js") %>"
+CodeMirror.requireMode("python", function() {
+  cm.setOption("mode", "python")
+  CodeMirror.autoLoadMode(cm, "python")
+})
+</script>
+
+<select id="language" onChange="updateMode()">
+  <option value="python" selected>Python</option>
+  <option value="javascript">Javascript</option>
+  <option value="text/x-csrc">C</option>
+  <option value="text/x-c++src">C++</option>
+  <option value="text/x-java">Java</option>
+</select>
+
+<script>
+function updateMode() {
+  var language = document.getElementById("language").value
+  console.log(language)
+  var mode
+  switch(language) {
+    case "text/x-csrc": mode = "clike"; break;
+    case "text/x-c++src": mode = "clike"; break;
+    case "text/x-java": mode = "clike"; break;
+    default: mode = language
+  }
+  CodeMirror.requireMode(mode, function() {
+    cm.setOption("mode", language)
+    CodeMirror.autoLoadMode(cm, mode)
+  })
+}
+</script>
+Current user:<span id="user"><%=@conn.params["user"]%></span>
+<div >
+    <h2>Users Online:<h2>
+    <ul id="userList"></ul>
+</div>
