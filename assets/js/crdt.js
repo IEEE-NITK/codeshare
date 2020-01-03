@@ -444,7 +444,9 @@ class CRDT {
      * @result {Number} lineNumber
      */
     remoteDeleteNewline(character) {
+        //Phoenix (server) converts Infinity to `null`. parseIdentifiers handles this
         var cchar = new Character(character.ch, parseIdentifiers(character.identifiers))
+        var isCharDeleted = false;
 
         //identify the line which has the newline character by comparing against last character in the lines
         var lineNumber;
@@ -461,6 +463,7 @@ class CRDT {
                 for(var c of lineToMerge) {
                     this.data[lineNumber].push(c);
                 }
+                isCharDeleted = true;
                 break;
             }
             //identify if the newline character has been deleted already or does not exist
@@ -469,7 +472,10 @@ class CRDT {
             }
         }
         //return the line number to update in codemirror
-        return lineNumber;
+        if(isCharDeleted)
+            return lineNumber;
+        else
+            return -1;
     }
     
     /**
