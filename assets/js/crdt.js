@@ -51,6 +51,7 @@ class Identifier {
 /**
  * Converts 2 element list to identifier list
  * @param  {List{List[2]}} list=[]
+ * @result {List{Identifiers}}
  */
 function createIdentifierList(list = []) {
     var identifierList = []
@@ -61,18 +62,21 @@ function createIdentifierList(list = []) {
 }
 
 /**
- * 
- * @param {List{List[2]}} list=[]
+ * Parse identifiers and replace `null` sideID
+ * with `Infinity`. (Phoenix converts `Infinity` 
+ * to `null`)
+ * @param  {List{Identifiers}}
+ * @result {List{Identifiers}}
  */
-function parseIdentifiers(list = []) {
+function parseIdentifiers(identifiers) {
     var identifierList = []
-    for(let l of list) {
+    for(let i of identifiers) {
         var temp;
-        if(l.siteID == null)
+        if(i.siteID == null)
             temp = Infinity;
         else
-            temp = l.siteID;
-        identifierList.push(new Identifier(l.position, temp))
+            temp = i.siteID;
+        identifierList.push(new Identifier(i.position, temp))
     }
     return identifierList;
 }
@@ -365,13 +369,16 @@ class CRDT {
     }
 
     /**
-     * Delete the `character` received from the CRDT structure if present
+     * Delete the `character` received from the CRDT structure if present.
+     * Returns -1 if character is not deleted (i.e. when already locally deleted)
      * @param {Character} character 
      * @result {Number} lineNumber
      */
     remoteDelete(character) { //Binary search insertion [pointless since splice will be O(n)]
+        //Phoenix (server) converts Infinity to `null`. parseIdentifiers handles this
         var charCopy = new Character(character.ch, parseIdentifiers(character.identifiers))
-        
+        var isCharDeleted = false;
+
         //identify the line in which the character is present by comparing against last character in the lines
         var lineNumber;
         for(lineNumber = 0; lineNumber<this.data.length; lineNumber++) {
@@ -382,14 +389,18 @@ class CRDT {
                     var c = this.data[lineNumber][pos];
                     if(c.isEqualTo(charCopy)) {
                         this.data[lineNumber].splice(pos, 1);
+                        isCharDeleted = true;
                         break;
-                    } 
+                    }
                 }
                 break;
             }
         }
         //return the line number to update in codemirror
-        return lineNumber;
+        if(isCharDeleted)
+            return lineNumber;
+        else
+            return -1;
     }
 
     /**
