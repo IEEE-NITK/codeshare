@@ -12,12 +12,17 @@ defmodule CodeshareWeb.RoomChannel do
   end
 
   def handle_info(:after_join, socket) do
-    userColor = socket.assigns.user_color
+    # userColor = socket.assigns.user_color
 
-    Presence.track(socket, socket.assigns.user_name, %{cursor_color: userColor, has_cursor: false})
-
+    # Presence.track(socket, socket.assigns.user_id, %{cursor_color: userColor, has_cursor: false})
+    Presence.track(socket, socket.assigns.user_id, %{has_cursor: false})
     push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
+  end
+
+  def handle_in("get_my_id", payload, socket) do
+    payload = Map.put(payload, "user_id", socket.assigns.user_id)
+    {:reply, {:ok, payload}, socket}
   end
 
   # Channels can be used in a request/response fashion
@@ -34,7 +39,7 @@ defmodule CodeshareWeb.RoomChannel do
   end
 
   def handle_in("updateCursor", payload, socket) do
-    payload = Map.put(payload, "user_name", socket.assigns.user_name)
+    payload = Map.put(payload, "user_id", socket.assigns.user_id)
     broadcast(socket, "updateCursor", payload)
     {:noreply, socket}
   end

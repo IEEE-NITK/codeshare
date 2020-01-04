@@ -14,17 +14,23 @@ import "phoenix_html"
 
 import { Presence, Socket } from "phoenix"
 import crdt from "./crdt"
+import socket from "./socket"
 
 var cm = window.cm // cm: CodeMirror
 
 // Join Channel
-let user = document.getElementById("user").innerText
-var userColor = generateColor()
-let socket = new Socket("/socket", { params: { user: user, userColor: userColor } })
-socket.connect()
+// let user = document.getElementById("user").innerText
+// var userColor = generateColor()
+// let socket = new Socket("/socket", { params: { user: user, userColor: userColor } })
+// socket.connect()
 let channel = socket.channel("room:lobby", {});
 let presence = new Presence(channel)
 channel.join()
+
+var my_id;
+channel.push("get_my_id", {}).receive(
+    "ok", (reply) => my_id = reply.user_id
+)
 
 // Display active users
 displayUsers()
@@ -52,7 +58,7 @@ cm.on("beforeChange", (cm, changeobj) => {
                         channel.push("shout", {
                             type: "delete",
                             character: tempCharacter,
-                            user: user
+                            user_id: my_id
                         })
                     }
 
@@ -62,27 +68,27 @@ cm.on("beforeChange", (cm, changeobj) => {
                         channel.push("shout", {
                             type: "deletenewline",
                             character: tempCharacter,
-                            user: user
+                            user_id: my_id
                         })
                     }
                 }
             }
             //newline insertion
             if(changeobj.text.length > 1) {
-                var tempCharacter = crdt.localInsertNewline(changeobj.from.line, changeobj.from.ch, user);
+                var tempCharacter = crdt.localInsertNewline(changeobj.from.line, changeobj.from.ch, my_id);
                 channel.push("shout", {
                     type: "inputnewline",
                     character: tempCharacter,
-                    user: user
+                    user_id: my_id
                 })
             }
             //single insertion (normal case)
             else{
-                var tempCharacter = crdt.localInsert(changeobj.text[0], changeobj.from.line, changeobj.from.ch, user)
+                var tempCharacter = crdt.localInsert(changeobj.text[0], changeobj.from.line, changeobj.from.ch, my_id)
                 channel.push("shout", {
                     type: "input",
                     character: tempCharacter,
-                    user: user
+                    user_id: my_id
                 })
             }
         }
@@ -99,7 +105,7 @@ cm.on("beforeChange", (cm, changeobj) => {
                     channel.push("shout", {
                         type: "delete",
                         character: tempCharacter,
-                        user: user
+                        user_id: my_id
                     })
                 }
 
@@ -109,7 +115,7 @@ cm.on("beforeChange", (cm, changeobj) => {
                     channel.push("shout", {
                         type: "deletenewline",
                         character: tempCharacter,
-                        user: user
+                        user_id: my_id
                     })
                 }
             }
@@ -128,7 +134,7 @@ cm.on("beforeChange", (cm, changeobj) => {
 
 // Apply changes from others
 channel.on('shout', function (payload) {
-    if (user != payload.user) {
+    if (my_id != payload.user_id) {
         if(payload.type == "input") {
             var modifiedLine = crdt.remoteInsert(payload.character)
             cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
@@ -158,7 +164,8 @@ cm.on("cursorActivity", (cm) => {
 
     channel.push("updateCursor", {
         cursorPos: cursorPos,
-        cursorColor: userColor
+        // cursorColor: userColor
+        user_id: my_id
     });
 });
 
@@ -167,28 +174,30 @@ channel.on("updateCursor", function (payload) {
     // console.log(markers)
     var cursor = document.createElement('span');
 
-    if (user != payload.user_name) {
+    if (my_id != payload.user_id) {
         cursor.style.borderLeftStyle = 'solid';
         cursor.style.borderLeftWidth = '1px';
-        cursor.style.borderLeftColor = payload.cursorColor;
+        cursor.style.borderLeftColor = `#${payload.user_id}`;
         cursor.style.height = `${(payload.cursorPos.bottom - payload.cursorPos.top)}px`;
         cursor.style.padding = 0;
         cursor.style.zIndex = 0;
-        if (markers[payload.user_name] != undefined) {
-            markers[payload.user_name].clear();
+        if (markers[payload.user_id] != undefined) {
+            markers[payload.user_id].clear();
         }
-        markers[payload.user_name] = cm.setBookmark(payload.cursorPos, { widget: cursor , handleMouseEvents: true});
+        markers[payload.user_id] = cm.setBookmark(payload.cursorPos, { widget: cursor , handleMouseEvents: true});
     }
-    if(markers[payload.user_name] != undefined && user==payload.user_name){
-        markers[payload.user_name].clear();
+    if(markers[payload.user_id] != undefined && my_id==payload.user_id){
+        markers[payload.user_id].clear();
     }
+    console.log("updateCursor markers", markers)
 })
 
 // Remove my cursor when I leave
-presence.onLeave((id,current,leftPres) =>{
+presence.onLeave((user_id,current,leftPres) =>{
     if(current.metas.length==0){
-        markers[id].clear()
-       delete markers[id]
+        console.log("onLeave markers", markers)
+        markers[user_id].clear()
+       delete markers[user_id]
        // console.log(typeof markers)
     }
 })
@@ -198,9 +207,9 @@ presence.onLeave((id,current,leftPres) =>{
 function displayUsers() {
     function renderOnlineUsers(presence) {
         let response = ""
-        presence.list((user, { metas: [first, ...rest] }) => {
-            let cursorColor = first["cursor_color"]
-            response += `<p style="color:${cursorColor};">${user}</p>`
+        presence.list((user_id, { metas: [params] }) => {
+            // let cursorColor = first["cursor_color"]
+            response += `<p style="color:#${user_id};">${user_id}</p>`
         })
         let userList = document.getElementById("userList")
         userList.innerHTML = response
