@@ -370,7 +370,7 @@ class CRDT {
 
     /**
      * Delete the `character` received from the CRDT structure if present.
-     * Returns -1 if character is not deleted (i.e. when already locally deleted)
+     * Returns -1 if character is not deleted 
      * @param {Character} character 
      * @result {Number} lineNumber
      */
@@ -440,6 +440,7 @@ class CRDT {
 
     /**
      * Delete the newline character `character` in CRDT
+     * Returns -1 if character is not deleted.
      * @param {Character} character 
      * @result {Number} lineNumber
      */
