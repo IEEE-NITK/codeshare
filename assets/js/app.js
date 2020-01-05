@@ -135,7 +135,8 @@ channel.on('shout', function (payload) {
         }
         else if(payload.type == "delete") {
             var modifiedLine = crdt.remoteDelete(payload.character)
-            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
+            if(modifiedLine != -1)
+                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
         }
         else if(payload.type == "inputnewline") {
             var modifiedLine = crdt.remoteInsertNewline(payload.character)
@@ -144,7 +145,8 @@ channel.on('shout', function (payload) {
         }
         else if(payload.type == "deletenewline") {
             var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
-            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
+            if(modifiedLine != -1)
+                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
         }
     }
 })
