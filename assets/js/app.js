@@ -162,27 +162,34 @@ cm.on("cursorActivity", (cm) => {
     });
 });
 
+var markers = {}
+var cursors = {}
+
+function createCursor(payload) {
+    var cursor = document.createElement("span")
+    cursor.style.borderLeftStyle = 'solid';
+    cursor.style.borderLeftWidth = '1px';
+    cursor.style.borderLeftColor = `#${payload.user_id.toString(16)}`;
+    cursor.style.height = `${(payload.cursorPos.bottom - payload.cursorPos.top)}px`;
+    cursor.style.padding = 0;
+    cursor.style.zIndex = 0;
+    return cursor
+}
+
 // Receive cursor update from other users
 channel.on("updateCursor", function (payload) {
-    // console.log(markers)
-    var cursor = document.createElement('span');
-
-    if (my_id != payload.user_id) {
-        cursor.style.borderLeftStyle = 'solid';
-        cursor.style.borderLeftWidth = '1px';
-        cursor.style.borderLeftColor = `#${payload.user_id}`;
-        cursor.style.height = `${(payload.cursorPos.bottom - payload.cursorPos.top)}px`;
-        cursor.style.padding = 0;
-        cursor.style.zIndex = 0;
-        if (markers[payload.user_id] != undefined) {
-            markers[payload.user_id].clear();
+    console.log(payload)
+    console.log(markers)
+    if(payload.user_id != my_id) {
+        console.log(payload.user_id, "moved his cursor")
+        if(markers[payload.user_id] != undefined) {
+            markers[payload.user_id].clear()
         }
-        markers[payload.user_id] = cm.setBookmark(payload.cursorPos, { widget: cursor , handleMouseEvents: true});
+        else {
+            cursors[payload.user_id] = createCursor(payload)
+        }
+        markers[payload.user_id] = cm.setBookmark(payload.cursorPos, {widget: cursors[payload.user_id], handleMouseEvents: true})
     }
-    if(markers[payload.user_id] != undefined && my_id==payload.user_id){
-        markers[payload.user_id].clear();
-    }
-    console.log("updateCursor markers", markers)
 })
 
 /*** Logging and Misc ***/
@@ -196,12 +203,22 @@ channel.on("presence_state", state => {
 })
 
 channel.on("presence_diff", diff => {
+    var user = diff.leaves[Object.keys(diff.leaves)[0]]
+    if(user != undefined) {
+        if(markers[user.metas[0].user_id] != undefined)
+            markers[user.metas[0].user_id].clear()
+        delete markers[user.metas[0].user_id]
+        delete cursors[user.metas[0].user_id]
+    }
     presences = Presence.syncDiff(presences, diff)
     renderOnlineUsers(presences)
 })
 
 const renderOnlineUsers = function(presences) {
+    var ctr = 0
     let onlineUsers = Presence.list(presences, (id, {metas: [user, ...rest]}) => {
+        console.log("user ", ctr, user)
+        ctr = ctr + 1
         return onlineUserTemplate(user);
     }).join("")
 
@@ -211,7 +228,7 @@ const renderOnlineUsers = function(presences) {
 const onlineUserTemplate = function(user) {
 return `
     <div id="online-user-${user.user_id}">
-    <strong class="text-secondary" style="color:#${user.user_id}">${user.user_id}</strong>
+    <strong><font color="#${user.user_id.toString(16)}">${user.user_id}</font></strong>
     </div>
 `
 }

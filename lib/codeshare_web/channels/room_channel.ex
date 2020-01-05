@@ -13,7 +13,7 @@ defmodule CodeshareWeb.RoomChannel do
 
   def handle_info(:after_join, socket) do
     push(socket, "presence_state", Presence.list(socket))
-    {:ok, _} = Presence.track(socket, "user_id:#{socket.assigns.user_id}", %{user_id: socket.assigns.user_id, has_cursor: false})
+    {:ok, _} = Presence.track(socket, "user_id:#{socket.assigns.user_id}", %{user_id: socket.assigns.user_id})
     {:noreply, socket}
   end
 
