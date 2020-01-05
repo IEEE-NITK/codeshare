@@ -35,6 +35,7 @@ channel.push("get_my_id", {}).receive("ok", (reply) => {
 
 // Send my changes to others
 cm.on("beforeChange", (cm, changeobj) => {
+
     if (changeobj.origin != undefined) {
     
         if(changeobj.origin == "+input") {
@@ -127,6 +128,8 @@ cm.on("beforeChange", (cm, changeobj) => {
 
 // Apply changes from others
 channel.on('shout', function (payload) {
+    console.log("00000000000000")
+    console.log(payload)
     if (my_id != payload.user_id) {
         if(payload.type == "input") {
             var modifiedLine = crdt.remoteInsert(payload.character)
