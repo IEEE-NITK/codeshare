@@ -9,34 +9,27 @@ import css from "../css/app.css"
 // Import dependencies
 //
 import "phoenix_html"
+import {Socket, Presence} from "phoenix"
 
 // Import local files
-
-import { Presence, Socket } from "phoenix"
 import crdt from "./crdt"
 import socket from "./socket"
 
 var cm = window.cm // cm: CodeMirror
 
 // Join Channel
-// let user = document.getElementById("user").innerText
-// var userColor = generateColor()
-// let socket = new Socket("/socket", { params: { user: user, userColor: userColor } })
-// socket.connect()
-let channel = socket.channel("room:lobby", {});
-let presence = new Presence(channel)
+let channel = socket.channel("room:lobby", {})
+
 channel.join()
+  .receive("ok", resp => { console.log("Joined successfully", resp) })
+  .receive("error", resp => { console.log("Unable to join", resp) })  
 
+// Getting my user_id
 var my_id;
-channel.push("get_my_id", {}).receive(
-    "ok", (reply) => my_id = reply.user_id
-)
-
-// Display active users
-displayUsers()
-
-// Keeps track of other's cursors
-var markers = {}
+channel.push("get_my_id", {}).receive("ok", (reply) => {
+    my_id = reply.user_id
+    document.getElementById("user_id").textContent = my_id
+})
 
 /*** Send and recieve editor changes ***/
 
@@ -192,42 +185,33 @@ channel.on("updateCursor", function (payload) {
     console.log("updateCursor markers", markers)
 })
 
-// Remove my cursor when I leave
-presence.onLeave((user_id,current,leftPres) =>{
-    if(current.metas.length==0){
-        console.log("onLeave markers", markers)
-        markers[user_id].clear()
-       delete markers[user_id]
-       // console.log(typeof markers)
-    }
-})
-
 /*** Logging and Misc ***/
 
-function displayUsers() {
-    function renderOnlineUsers(presence) {
-        let response = ""
-        presence.list((user_id, { metas: [params] }) => {
-            // let cursorColor = first["cursor_color"]
-            response += `<p style="color:#${user_id};">${user_id}</p>`
-        })
-        let userList = document.getElementById("userList")
-        userList.innerHTML = response
-    }
-    presence.onSync(() => 
-    renderOnlineUsers(presence)
-    )
+// To keep track of online users
+let presences = {}
+
+channel.on("presence_state", state => {
+    presences = Presence.syncState(presences, state)
+    renderOnlineUsers(presences)
+})
+
+channel.on("presence_diff", diff => {
+    presences = Presence.syncDiff(presences, diff)
+    renderOnlineUsers(presences)
+})
+
+const renderOnlineUsers = function(presences) {
+    let onlineUsers = Presence.list(presences, (id, {metas: [user, ...rest]}) => {
+        return onlineUserTemplate(user);
+    }).join("")
+
+    document.querySelector("#online-users").innerHTML = onlineUsers;
 }
 
-function generateColor() {
-    // var letters = '0123456789ABCDEF'
-    // var color = '#'
-    // for (var i = 0; i < 6; i++) {
-    //     color += letters[Math.floor(Math.random() * 16)];
-    // }
-    // return color;
-    //temporary assignments for user names 1,2,3 
-    if (user == "1") return "red"
-    else if (user == "2") return "green"
-    else return "yellow"
+const onlineUserTemplate = function(user) {
+return `
+    <div id="online-user-${user.user_id}">
+    <strong class="text-secondary" style="color:#${user.user_id}">${user.user_id}</strong>
+    </div>
+`
 }

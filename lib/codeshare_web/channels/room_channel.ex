@@ -2,21 +2,18 @@ defmodule CodeshareWeb.RoomChannel do
   use CodeshareWeb, :channel
   alias CodeshareWeb.Presence
 
-  def join("room:lobby", payload, socket) do
+  def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
       send(self(), :after_join)
-      {:ok, socket}
+      {:ok, %{channel: "room:#{room_id}"}, assign(socket, :room_id, room_id)}
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
   def handle_info(:after_join, socket) do
-    # userColor = socket.assigns.user_color
-
-    # Presence.track(socket, socket.assigns.user_id, %{cursor_color: userColor, has_cursor: false})
-    Presence.track(socket, socket.assigns.user_id, %{has_cursor: false})
     push(socket, "presence_state", Presence.list(socket))
+    {:ok, _} = Presence.track(socket, "user_id:#{socket.assigns.user_id}", %{user_id: socket.assigns.user_id, has_cursor: false})
     {:noreply, socket}
   end
 

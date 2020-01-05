@@ -44,8 +44,13 @@ function updateMode() {
   })
 }
 </script>
-Current user:<span id="user"><%=@conn.params["user"]%></span>
-<div >
-    <h2>Users Online:<h2>
-    <ul id="userList"></ul>
+
+Current user:<span id="user_id"></span>
+<div class="col-md-3">
+  <div class="card">
+    <h5 class="card-header text-white bg-secondary">Online:</h5>
+    <div class="card-body">
+      <div id="online-users"></div>
+    </div>
+  </div>
 </div>
