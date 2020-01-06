@@ -31,6 +31,38 @@ channel.push("get_my_id", {}).receive("ok", (reply) => {
     document.getElementById("user_id").textContent = my_id
 })
 
+function applyOp(payload) {
+    if (my_id != payload.user_id) {
+        if(payload.type == "input") {
+            var modifiedLine = crdt.remoteInsert(payload.character)
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
+        }
+        else if(payload.type == "delete") {
+            var modifiedLine = crdt.remoteDelete(payload.character)
+            if(modifiedLine != -1)
+                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
+        }
+        else if(payload.type == "inputnewline") {
+            var modifiedLine = crdt.remoteInsertNewline(payload.character)
+            cm.replaceRange([crdt.getUpdatedLine(modifiedLine), ""], {line: modifiedLine, ch:0}, {line: modifiedLine})
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine+1), {line: modifiedLine+1, ch:0}, {line: modifiedLine+1})
+        }
+        else if(payload.type == "deletenewline") {
+            var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
+            if(modifiedLine != -1)
+                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
+        }
+    }
+}
+
+channel.push("get_old_operations", {}).receive("ok", (payload) => {
+    var ops = payload.ops
+    console.log(ops)
+    for(var i = 0; i < ops.length; i++) {
+        applyOp(ops[i])
+    }
+})
+
 /*** Send and recieve editor changes ***/
 
 // Send my changes to others
@@ -128,8 +160,6 @@ cm.on("beforeChange", (cm, changeobj) => {
 
 // Apply changes from others
 channel.on('shout', function (payload) {
-    console.log("00000000000000")
-    console.log(payload)
     if (my_id != payload.user_id) {
         if(payload.type == "input") {
             var modifiedLine = crdt.remoteInsert(payload.character)

@@ -1,5 +1,6 @@
 defmodule CodeshareWeb.RoomChannel do
   use CodeshareWeb, :channel
+  import Ecto.Query, only: [from: 2]
   alias CodeshareWeb.Presence
 
   def join("room:" <> room_id, payload, socket) do
@@ -20,6 +21,14 @@ defmodule CodeshareWeb.RoomChannel do
   def handle_in("get_my_id", payload, socket) do
     payload = Map.put(payload, "user_id", socket.assigns.user_id)
     {:reply, {:ok, payload}, socket}
+  end
+
+  def handle_in("get_old_operations", payload, socket) do
+    query = from editor in "editor_state",
+            select: editor.data
+    ops = Codeshare.Repo.all(query)
+    snd_payload = %{ops: ops}
+    {:reply, {:ok, snd_payload}, socket}
   end
 
   # Channels can be used in a request/response fashion
