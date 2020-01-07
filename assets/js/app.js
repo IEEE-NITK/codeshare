@@ -20,17 +20,6 @@ var cm = window.cm // cm: CodeMirror
 // Join Channel
 let channel = socket.channel("room:lobby", {})
 
-channel.join()
-  .receive("ok", resp => { console.log("Joined successfully", resp) })
-  .receive("error", resp => { console.log("Unable to join", resp) })  
-
-// Getting my user_id
-var my_id;
-channel.push("get_my_id", {}).receive("ok", (reply) => {
-    my_id = reply.user_id
-    document.getElementById("user_id").textContent = my_id
-})
-
 function applyOp(payload) {
     if (my_id != payload.user_id) {
         if(payload.type == "input") {
@@ -55,13 +44,35 @@ function applyOp(payload) {
     }
 }
 
-channel.push("get_old_operations", {}).receive("ok", (payload) => {
-    var ops = payload.ops
-    console.log(ops)
-    for(var i = 0; i < ops.length; i++) {
-        applyOp(ops[i])
-    }
+
+
+channel.join()
+  .receive("ok", resp => { 
+        console.log("Joined successfully", resp) 
+        var ops = resp.ops
+        console.log(ops)
+        for(var i = 0; i < ops.length; i++) {
+            applyOp(ops[i])
+        }
+  })
+  .receive("error", resp => { console.log("Unable to join", resp) })  
+
+// Getting my user_id
+var my_id;
+channel.push("get_my_id", {}).receive("ok", (reply) => {
+    my_id = reply.user_id
+    document.getElementById("user_id").textContent = my_id
 })
+
+
+
+// channel.push("get_old_operations", {}).receive("ok", (payload) => {
+//     var ops = payload.ops
+//     console.log(ops)
+//     for(var i = 0; i < ops.length; i++) {
+//         applyOp(ops[i])
+//     }
+// })
 
 /*** Send and recieve editor changes ***/
 
@@ -256,7 +267,6 @@ const renderOnlineUsers = function(presences) {
         ctr = ctr + 1
         return onlineUserTemplate(user);
     }).join("")
-
     document.querySelector("#online-users").innerHTML = onlineUsers;
 }
 
