@@ -45,34 +45,18 @@ function applyOp(payload) {
 }
 
 
-
+var my_id;
 channel.join()
   .receive("ok", resp => { 
-        console.log("Joined successfully", resp) 
+        // console.log("Joined successfully", resp)
+        console.log("Joined successfully") 
+        my_id = resp.my_id
         var ops = resp.ops
-        console.log(ops)
         for(var i = 0; i < ops.length; i++) {
             applyOp(ops[i])
         }
   })
   .receive("error", resp => { console.log("Unable to join", resp) })  
-
-// Getting my user_id
-var my_id;
-channel.push("get_my_id", {}).receive("ok", (reply) => {
-    my_id = reply.user_id
-    document.getElementById("user_id").textContent = my_id
-})
-
-
-
-// channel.push("get_old_operations", {}).receive("ok", (payload) => {
-//     var ops = payload.ops
-//     console.log(ops)
-//     for(var i = 0; i < ops.length; i++) {
-//         applyOp(ops[i])
-//     }
-// })
 
 /*** Send and recieve editor changes ***/
 
@@ -172,25 +156,7 @@ cm.on("beforeChange", (cm, changeobj) => {
 // Apply changes from others
 channel.on('shout', function (payload) {
     if (my_id != payload.user_id) {
-        if(payload.type == "input") {
-            var modifiedLine = crdt.remoteInsert(payload.character)
-            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
-        }
-        else if(payload.type == "delete") {
-            var modifiedLine = crdt.remoteDelete(payload.character)
-            if(modifiedLine != -1)
-                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
-        }
-        else if(payload.type == "inputnewline") {
-            var modifiedLine = crdt.remoteInsertNewline(payload.character)
-            cm.replaceRange([crdt.getUpdatedLine(modifiedLine), ""], {line: modifiedLine, ch:0}, {line: modifiedLine})
-            cm.replaceRange(crdt.getUpdatedLine(modifiedLine+1), {line: modifiedLine+1, ch:0}, {line: modifiedLine+1})
-        }
-        else if(payload.type == "deletenewline") {
-            var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
-            if(modifiedLine != -1)
-                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
-        }
+        applyOp(payload)
     }
 })
 
@@ -224,10 +190,7 @@ function createCursor(payload) {
 
 // Receive cursor update from other users
 channel.on("updateCursor", function (payload) {
-    console.log(payload)
-    console.log(markers)
     if(payload.user_id != my_id) {
-        console.log(payload.user_id, "moved his cursor")
         if(markers[payload.user_id] != undefined) {
             markers[payload.user_id].clear()
         }

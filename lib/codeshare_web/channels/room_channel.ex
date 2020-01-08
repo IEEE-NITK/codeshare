@@ -9,7 +9,7 @@ defmodule CodeshareWeb.RoomChannel do
             select: editor.data
       ops = Codeshare.Repo.all(query)
       send(self(), :after_join)
-      {:ok, %{channel: "room:#{room_id}", ops: ops}, assign(socket, :room_id, room_id)}
+      {:ok, %{channel: "room:#{room_id}", ops: ops, my_id: socket.assigns.user_id}, assign(socket, :room_id, room_id)}
     else
       {:error, %{reason: "unauthorized"}}
     end
@@ -20,19 +20,6 @@ defmodule CodeshareWeb.RoomChannel do
     {:ok, _} = Presence.track(socket, "user_id:#{socket.assigns.user_id}", %{user_id: socket.assigns.user_id})
     {:noreply, socket}
   end
-
-  def handle_in("get_my_id", payload, socket) do
-    payload = Map.put(payload, "user_id", socket.assigns.user_id)
-    {:reply, {:ok, payload}, socket}
-  end
-
-#  def handle_in("get_old_operations", payload, socket) do
-#    query = from editor in "editor_state",
-#            select: editor.data
-#    ops = Codeshare.Repo.all(query)
-#    snd_payload = %{ops: ops}
-#    {:reply, {:ok, snd_payload}, socket}
-#  end
 
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
