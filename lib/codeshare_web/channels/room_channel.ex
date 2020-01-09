@@ -43,6 +43,17 @@ defmodule CodeshareWeb.RoomChannel do
     {:noreply, socket}
   end
 
+  def terminate(_ , socket) do
+    # When last active channel is terminating, 
+    # empty the database
+    if map_size(Presence.list(socket)) == 1 do
+      query = from editor in "editor_state",
+            select: editor.data
+      Codeshare.Repo.delete_all(query)
+    end
+    :ok
+  end
+
   defp authorized?(_payload) do
     true
   end
