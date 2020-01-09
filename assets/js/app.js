@@ -44,7 +44,6 @@ function applyOp(payload) {
     }
 }
 
-
 var my_id;
 channel.join()
   .receive("ok", resp => { 
@@ -65,7 +64,7 @@ cm.on("beforeChange", (cm, changeobj) => {
 
     if (changeobj.origin != undefined) {
     
-        if(changeobj.origin == "+input") {
+        if(changeobj.origin == "+input" || changeobj.origin == "paste") {
             //select and insert => delete selected stuff first
             if(changeobj.from.line != changeobj.to.line || changeobj.from.ch != changeobj.to.ch) {
                 for(var i = changeobj.to.line; i >= changeobj.from.line; i--) {
@@ -94,27 +93,36 @@ cm.on("beforeChange", (cm, changeobj) => {
                     }
                 }
             }
-            //newline insertion
-            if(changeobj.text.length > 1) {
-                var tempCharacter = crdt.localInsertNewline(changeobj.from.line, changeobj.from.ch, my_id);
-                channel.push("shout", {
-                    type: "inputnewline",
-                    character: tempCharacter,
-                    user_id: my_id
-                })
-            }
-            //single insertion (normal case)
-            else{
-                var tempCharacter = crdt.localInsert(changeobj.text[0], changeobj.from.line, changeobj.from.ch, my_id)
-                channel.push("shout", {
-                    type: "input",
-                    character: tempCharacter,
-                    user_id: my_id
-                })
+            
+            //variables to maintain insertion state
+            var line = changeobj.from.line, ch = changeobj.from.ch, newline = false;
+            for(var i = 0; i < changeobj.text.length; i++) {
+                //insert newline character
+                if(newline) {
+                    var tempCharacter = crdt.localInsertNewline(line-1, ch, my_id)
+                    channel.push("shout", {
+                        type: "inputnewline",
+                        character: tempCharacter,
+                        user_id: my_id
+                    })
+                    ch = 0
+                }
+                //insert characters
+                for(var c of changeobj.text[i]) {
+                    var tempCharacter = crdt.localInsert(c, line, ch, my_id)
+                    channel.push("shout", {
+                        type: "input",
+                        character: tempCharacter,
+                        user_id: my_id
+                    })
+                    ch++;
+                }
+                line++;
+                newline = true;
             }
         }
 
-        else if(changeobj.origin == "+delete") {
+        else if(changeobj.origin == "+delete" || changeobj.origin == "cut") {
             for(var i = changeobj.to.line; i >= changeobj.from.line; i--) {
                 //identifying the begin and end position 
                 var begin = ((i==changeobj.from.line) ? (changeobj.from.ch) : 0)
@@ -141,12 +149,9 @@ cm.on("beforeChange", (cm, changeobj) => {
                 }
             }
         }
-
-        else if(changeobj.origin == "+paste") {
-
-        }
         
         else{
+            console.log(changeobj)
             alert("Unhandled case. Inform developer")
             changeobj.cancel()
         }
