@@ -7,6 +7,12 @@
 # General application configuration
 use Mix.Config
 
+config :codeshare, Codeshare.Repo,
+  database: "codeshare_repo",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost"
+
 config :codeshare,
   ecto_repos: [Codeshare.Repo]
 

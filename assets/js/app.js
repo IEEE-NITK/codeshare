@@ -20,24 +20,51 @@ var cm = window.cm // cm: CodeMirror
 // Join Channel
 let channel = socket.channel("room:lobby", {})
 
-channel.join()
-  .receive("ok", resp => { console.log("Joined successfully", resp) })
-  .receive("error", resp => { console.log("Unable to join", resp) })  
+function applyOp(payload) {
+    if (my_id != payload.user_id) {
+        if(payload.type == "input") {
+            var modifiedLine = crdt.remoteInsert(payload.character)
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
+        }
+        else if(payload.type == "delete") {
+            var modifiedLine = crdt.remoteDelete(payload.character)
+            if(modifiedLine != -1)
+                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
+        }
+        else if(payload.type == "inputnewline") {
+            var modifiedLine = crdt.remoteInsertNewline(payload.character)
+            cm.replaceRange([crdt.getUpdatedLine(modifiedLine), ""], {line: modifiedLine, ch:0}, {line: modifiedLine})
+            cm.replaceRange(crdt.getUpdatedLine(modifiedLine+1), {line: modifiedLine+1, ch:0}, {line: modifiedLine+1})
+        }
+        else if(payload.type == "deletenewline") {
+            var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
+            if(modifiedLine != -1)
+                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
+        }
+    }
+}
 
-// Getting my user_id
 var my_id;
-channel.push("get_my_id", {}).receive("ok", (reply) => {
-    my_id = reply.user_id
-    document.getElementById("user_id").textContent = my_id
-})
+channel.join()
+  .receive("ok", resp => { 
+        // console.log("Joined successfully", resp)
+        console.log("Joined successfully") 
+        my_id = resp.my_id
+        var ops = resp.ops
+        for(var i = 0; i < ops.length; i++) {
+            applyOp(ops[i])
+        }
+  })
+  .receive("error", resp => { console.log("Unable to join", resp) })  
 
 /*** Send and recieve editor changes ***/
 
 // Send my changes to others
 cm.on("beforeChange", (cm, changeobj) => {
+
     if (changeobj.origin != undefined) {
     
-        if(changeobj.origin == "+input") {
+        if(changeobj.origin == "+input" || changeobj.origin == "paste") {
             //select and insert => delete selected stuff first
             if(changeobj.from.line != changeobj.to.line || changeobj.from.ch != changeobj.to.ch) {
                 for(var i = changeobj.to.line; i >= changeobj.from.line; i--) {
@@ -66,27 +93,36 @@ cm.on("beforeChange", (cm, changeobj) => {
                     }
                 }
             }
-            //newline insertion
-            if(changeobj.text.length > 1) {
-                var tempCharacter = crdt.localInsertNewline(changeobj.from.line, changeobj.from.ch, my_id);
-                channel.push("shout", {
-                    type: "inputnewline",
-                    character: tempCharacter,
-                    user_id: my_id
-                })
-            }
-            //single insertion (normal case)
-            else{
-                var tempCharacter = crdt.localInsert(changeobj.text[0], changeobj.from.line, changeobj.from.ch, my_id)
-                channel.push("shout", {
-                    type: "input",
-                    character: tempCharacter,
-                    user_id: my_id
-                })
+            
+            //variables to maintain insertion state
+            var line = changeobj.from.line, ch = changeobj.from.ch, newline = false;
+            for(var i = 0; i < changeobj.text.length; i++) {
+                //insert newline character
+                if(newline) {
+                    var tempCharacter = crdt.localInsertNewline(line-1, ch, my_id)
+                    channel.push("shout", {
+                        type: "inputnewline",
+                        character: tempCharacter,
+                        user_id: my_id
+                    })
+                    ch = 0
+                }
+                //insert characters
+                for(var c of changeobj.text[i]) {
+                    var tempCharacter = crdt.localInsert(c, line, ch, my_id)
+                    channel.push("shout", {
+                        type: "input",
+                        character: tempCharacter,
+                        user_id: my_id
+                    })
+                    ch++;
+                }
+                line++;
+                newline = true;
             }
         }
 
-        else if(changeobj.origin == "+delete") {
+        else if(changeobj.origin == "+delete" || changeobj.origin == "cut") {
             for(var i = changeobj.to.line; i >= changeobj.from.line; i--) {
                 //identifying the begin and end position 
                 var begin = ((i==changeobj.from.line) ? (changeobj.from.ch) : 0)
@@ -113,12 +149,9 @@ cm.on("beforeChange", (cm, changeobj) => {
                 }
             }
         }
-
-        else if(changeobj.origin == "+paste") {
-
-        }
         
         else{
+            console.log(changeobj)
             alert("Unhandled case. Inform developer")
             changeobj.cancel()
         }
@@ -128,25 +161,7 @@ cm.on("beforeChange", (cm, changeobj) => {
 // Apply changes from others
 channel.on('shout', function (payload) {
     if (my_id != payload.user_id) {
-        if(payload.type == "input") {
-            var modifiedLine = crdt.remoteInsert(payload.character)
-            cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
-        }
-        else if(payload.type == "delete") {
-            var modifiedLine = crdt.remoteDelete(payload.character)
-            if(modifiedLine != -1)
-                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine})
-        }
-        else if(payload.type == "inputnewline") {
-            var modifiedLine = crdt.remoteInsertNewline(payload.character)
-            cm.replaceRange([crdt.getUpdatedLine(modifiedLine), ""], {line: modifiedLine, ch:0}, {line: modifiedLine})
-            cm.replaceRange(crdt.getUpdatedLine(modifiedLine+1), {line: modifiedLine+1, ch:0}, {line: modifiedLine+1})
-        }
-        else if(payload.type == "deletenewline") {
-            var modifiedLine = crdt.remoteDeleteNewline(payload.character, payload.lineNumber)
-            if(modifiedLine != -1)
-                cm.replaceRange(crdt.getUpdatedLine(modifiedLine), {line: modifiedLine, ch:0}, {line: modifiedLine+1})
-        }
+        applyOp(payload)
     }
 })
 
@@ -180,10 +195,7 @@ function createCursor(payload) {
 
 // Receive cursor update from other users
 channel.on("updateCursor", function (payload) {
-    console.log(payload)
-    console.log(markers)
     if(payload.user_id != my_id) {
-        console.log(payload.user_id, "moved his cursor")
         if(markers[payload.user_id] != undefined) {
             markers[payload.user_id].clear()
         }
@@ -223,7 +235,6 @@ const renderOnlineUsers = function(presences) {
         ctr = ctr + 1
         return onlineUserTemplate(user);
     }).join("")
-
     document.querySelector("#online-users").innerHTML = onlineUsers;
 }
 

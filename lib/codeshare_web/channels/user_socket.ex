@@ -36,7 +36,6 @@ defmodule CodeshareWeb.UserSocket do
   # Returning `nil` makes this socket anonymous.
   # def id(_socket), do: nil
   def id(socket) do
-    IO.inspect(socket.assigns.user_id)
     "user_socket:#{socket.assigns.user_id}"
   end
 end
