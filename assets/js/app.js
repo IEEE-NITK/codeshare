@@ -14,11 +14,23 @@ import {Socket, Presence} from "phoenix"
 // Import local files
 import crdt from "./crdt"
 import socket from "./socket"
+import crypto from "crypto"
 
 var cm = window.cm // cm: CodeMirror
 
 // Join Channel
-let channel = socket.channel("room:lobby", {})
+var channel;
+var urlParams = new URLSearchParams(window.location.search);
+if(urlParams.has("session")) {
+    channel = socket.channel("room:" + urlParams.get("session"), {})
+}
+else {
+    var room_id = crypto.randomBytes(20).toString("hex")
+    urlParams.set("session", room_id)
+    channel = socket.channel("room:" + room_id, {})
+    window.location.search = "session=" + room_id
+}
+// let channel = socket.channel("room:lobby", {})
 
 function applyOp(payload) {
     if (my_id != payload.user_id) {
@@ -50,6 +62,8 @@ channel.join()
         // console.log("Joined successfully", resp)
         console.log("Joined successfully") 
         my_id = resp.my_id
+        document.getElementById("my_id").textContent = my_id
+        document.getElementById("my_id").style.color = "#" + my_id.toString(16)
         var ops = resp.ops
         for(var i = 0; i < ops.length; i++) {
             applyOp(ops[i])
@@ -231,7 +245,6 @@ channel.on("presence_diff", diff => {
 const renderOnlineUsers = function(presences) {
     var ctr = 0
     let onlineUsers = Presence.list(presences, (id, {metas: [user, ...rest]}) => {
-        console.log("user ", ctr, user)
         ctr = ctr + 1
         return onlineUserTemplate(user);
     }).join("")
