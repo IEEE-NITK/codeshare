@@ -45,7 +45,7 @@ function updateMode() {
 }
 </script>
 
-Current user:<span id="user_id"></span>
+Current user: <span id="my_id" style="font-weight:bold"></span>
 <div class="col-md-3">
   <div class="card">
     <h5 class="card-header text-white bg-secondary">Online:</h5>
