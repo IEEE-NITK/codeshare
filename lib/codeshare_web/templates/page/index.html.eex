@@ -45,6 +45,8 @@ function updateMode() {
 }
 </script>
 
+<button id="compile_btn">Compile</button>
+
 Current user: <span id="my_id" style="font-weight:bold"></span>
 <div class="col-md-3">
   <div class="card">

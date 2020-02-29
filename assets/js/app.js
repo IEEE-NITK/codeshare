@@ -18,6 +18,16 @@ import crypto from "crypto"
 
 var cm = window.cm // cm: CodeMirror
 
+var compile_btn = window.compile_btn
+compile_btn.onclick = function(){
+    // console.log(crdt.getText())
+    channel.push("compile", {
+        text: crdt.getText()
+    }).receive("ok", reply => {
+        console.log(reply.output)
+    })
+}
+
 // Join Channel
 var channel;
 var urlParams = new URLSearchParams(window.location.search);
