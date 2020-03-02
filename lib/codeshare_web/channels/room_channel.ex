@@ -34,7 +34,7 @@ defmodule CodeshareWeb.RoomChannel do
     {:ok, file} = File.open(user_id_string <> "/code", [:write])
     IO.binwrite(file, payload["text"])
     File.close(file)
-    IO.inspect System.cmd("bash", ["compile.sh", user_id_string])
+    IO.inspect System.cmd("bash", ["run-docker.sh", user_id_string, "c"]) #TODO: pass language
     {:ok, output} = File.read(user_id_string <> "/output") #TODO: handle :error
     System.cmd("rm", ["-rf", user_id_string])
     {:reply, {:ok, Map.put(payload, "output", output)}, socket}

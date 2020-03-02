@@ -1,0 +1,1 @@
+docker run -v `pwd`/$1:/codeshare-sandbox/files $2 &> $1/output

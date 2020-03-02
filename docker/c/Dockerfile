@@ -4,7 +4,6 @@ WORKDIR /codeshare-sandbox
 
 RUN apk add --no-cache bash
 
-COPY test.sh .
+COPY run.sh .
 
-# RUN apt-get install -y bash
-ENTRYPOINT ["bash", "test.sh"]
+ENTRYPOINT ["bash", "run.sh"]
