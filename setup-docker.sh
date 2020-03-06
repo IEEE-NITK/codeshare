@@ -6,5 +6,5 @@ for subdir in ./docker/*/; do
     docker build -t $LANG .
     echo ""
     echo "INFO: Done building docker for ${LANG}.."
-    cd ..
+    cd ../../
 done
