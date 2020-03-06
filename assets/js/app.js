@@ -25,6 +25,7 @@ compile_btn.onclick = function(){
     switch(language) {
         case "text/x-csrc": compile_lang = "c"; break;
         case "text/x-c++src": compile_lang = "cpp"; break;
+        case "text/x-java": compile_lang = "java"; break;
         default: console.log("Language support not provided"); return;
     }
     channel.push("compile", {
