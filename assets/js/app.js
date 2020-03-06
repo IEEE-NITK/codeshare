@@ -20,9 +20,15 @@ var cm = window.cm // cm: CodeMirror
 
 var compile_btn = window.compile_btn
 compile_btn.onclick = function(){
-    // console.log(crdt.getText())
+    var language = document.getElementById("language").value
+    var compile_lang
+    switch(language) {
+        case "text/x-csrc": compile_lang = "c"; break;
+        default: console.log("Language support not provided"); return;
+    }
     channel.push("compile", {
-        text: crdt.getText()
+        text: crdt.getText(),
+        language: compile_lang
     }).receive("ok", reply => {
         console.log(reply.output)
     })
