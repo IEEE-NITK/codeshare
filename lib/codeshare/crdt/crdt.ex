@@ -8,14 +8,14 @@ defmodule Codeshare.CRDT do
         ch: "",
         identifiers: [%Identifier{
           position: 0,
-          siteId: -1
+          siteID: -1
         }]
       },
       %Character{
         ch: "",
         identifiers: [%Identifier{
             position: 1,
-            siteId: 16777216 #TODO: Infinity for now; think of something
+            siteID: 16777216 #TODO: Infinity for now; think of something
           }]
       }
       ]] 

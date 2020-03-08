@@ -2,6 +2,7 @@ defmodule CodeshareWeb.RoomChannel do
   use CodeshareWeb, :channel
   import Ecto.Query, only: [from: 2]
   alias CodeshareWeb.Presence
+  alias Codeshare.{Identifier, Character}
 
   def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
