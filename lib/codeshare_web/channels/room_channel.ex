@@ -38,7 +38,7 @@ defmodule CodeshareWeb.RoomChannel do
     IO.inspect payload
     {:ok, output} = File.read(user_id_string <> "/output") #TODO: handle :error
     System.cmd("rm", ["-rf", user_id_string])
-    {:reply, {:ok, Map.put(payload, "output", output)}, socket}
+    {:reply, {:ok, Map.put(payload, "output", "OUTPUT:\n" <> output)}, socket}
   end
 
   # It is also common to receive messages from the client and
