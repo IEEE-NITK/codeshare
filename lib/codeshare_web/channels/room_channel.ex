@@ -28,6 +28,19 @@ defmodule CodeshareWeb.RoomChannel do
     {:reply, {:ok, payload}, socket}
   end
 
+  def handle_in("compile", payload, socket) do #TODO: handle multiple languages, handle input
+    user_id_string = to_string(socket.assigns.user_id)
+    System.cmd("mkdir", [user_id_string])
+    {:ok, file} = File.open(user_id_string <> "/code", [:write])
+    IO.binwrite(file, payload["text"])
+    File.close(file)
+    IO.inspect System.cmd("bash", ["run-docker.sh", user_id_string, payload["language"]]) #TODO: pass language
+    IO.inspect payload
+    {:ok, output} = File.read(user_id_string <> "/output") #TODO: handle :error
+    System.cmd("rm", ["-rf", user_id_string])
+    {:reply, {:ok, Map.put(payload, "output", "OUTPUT:\n" <> output)}, socket}
+  end
+
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (room:lobby).
   def handle_in("shout", payload, socket) do

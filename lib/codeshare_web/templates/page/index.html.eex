@@ -21,7 +21,6 @@ CodeMirror.requireMode("python", function() {
 
 <select id="language" onChange="updateMode()">
   <option value="python" selected>Python</option>
-  <option value="javascript">Javascript</option>
   <option value="text/x-csrc">C</option>
   <option value="text/x-c++src">C++</option>
   <option value="text/x-java">Java</option>
@@ -44,6 +43,8 @@ function updateMode() {
   })
 }
 </script>
+
+<button id="compile_btn">Compile</button>
 
 Current user: <span id="my_id" style="font-weight:bold"></span>
 <div class="col-md-3">

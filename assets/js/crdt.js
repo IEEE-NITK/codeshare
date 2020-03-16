@@ -509,6 +509,22 @@ class CRDT {
         }
         return output;
     }
+
+    getText() {
+        var output = "";
+        for(let i =0; i < this.data.length; i++) {
+            for(let j = 0; j < this.data[i].length; j++) {
+                var character = this.data[i][j];
+                if(character.ch == "") {
+                    output += "\n"
+                }
+                else {
+                    output += character.ch
+                }
+            }
+        }
+        return output
+    }
 }
 
 var crdt = new CRDT();

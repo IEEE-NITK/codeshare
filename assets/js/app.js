@@ -18,6 +18,25 @@ import crypto from "crypto"
 
 var cm = window.cm // cm: CodeMirror
 
+var compile_btn = window.compile_btn
+compile_btn.onclick = function(){
+    var language = document.getElementById("language").value
+    var compile_lang
+    switch(language) {
+        case "text/x-csrc": compile_lang = "c"; break;
+        case "text/x-c++src": compile_lang = "cpp"; break;
+        case "text/x-java": compile_lang = "java"; break;
+        case "python": compile_lang = "python"; break;
+        default: console.log("Language support not provided"); return;
+    }
+    channel.push("compile", {
+        text: crdt.getText(),
+        language: compile_lang
+    }).receive("ok", reply => {
+        console.log(reply.output)
+    })
+}
+
 // Join Channel
 var channel;
 var urlParams = new URLSearchParams(window.location.search);
