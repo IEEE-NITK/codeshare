@@ -2,7 +2,7 @@ defmodule CodeshareWeb.RoomChannel do
   use CodeshareWeb, :channel
   import Ecto.Query, only: [from: 2]
   alias CodeshareWeb.Presence
-  alias Codeshare.{Identifier, Character}
+  alias Codeshare.CRDT
 
   def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
@@ -31,6 +31,11 @@ defmodule CodeshareWeb.RoomChannel do
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (room:lobby).
   def handle_in("shout", payload, socket) do
+
+    # Update server-side CRDT
+    CRDT.put(payload)
+    IO.inspect CRDT.get()
+
     editor = %Codeshare.Editor{}
     changeset = Codeshare.Editor.changeset(editor, %{data: payload})
     Codeshare.Repo.insert(changeset)
