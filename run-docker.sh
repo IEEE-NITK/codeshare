@@ -1,0 +1,1 @@
+docker run --cpus=1 --memory=4m -v `pwd`/$1:/codeshare-sandbox/files $2

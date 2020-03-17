@@ -2,7 +2,7 @@ defmodule CodeshareWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "room:lobby", CodeshareWeb.RoomChannel
+  channel "room:*", CodeshareWeb.RoomChannel
 
   ## Transports
   transport(:websocket, Phoenix.Transports.WebSocket)
