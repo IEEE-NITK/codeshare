@@ -14,6 +14,15 @@ defmodule Codeshare.Identifier do
     }
   end
 
+  def to_string(identifier) do
+    # Client and server have diff infinity values!
+    if identifier.siteID == 16777216 do
+      "[#{identifier.position}, Infinity]"
+    else
+      "[#{identifier.position}, #{identifier.siteID}]"
+    end
+  end
+
   def is_equal(id1, id2) do
     id1.position == id2.position && id1.siteID == id2.siteID
   end
@@ -44,6 +53,10 @@ defmodule Codeshare.Character do
       ch: map["ch"],
       identifiers: to_identifiers_struct_list(map["identifiers"])
     }
+  end
+
+  def to_string(character) do
+    "{#{character.ch}: [#{to_string_id_list(character.identifiers)}]}"
   end
 
   defp to_identifiers_struct_list(identifiers_map_list) do
@@ -106,6 +119,15 @@ defmodule Codeshare.Character do
         end
     end
 
+  end
+
+  defp to_string_id_list(id_list) do
+    [first_id | id_list] = id_list
+    if id_list == [] do
+      "#{Identifier.to_string(first_id)}"
+    else
+      "#{Identifier.to_string(first_id)}, #{to_string_id_list(id_list)}"
+    end
   end
 
   # TODO: Add struct validation?

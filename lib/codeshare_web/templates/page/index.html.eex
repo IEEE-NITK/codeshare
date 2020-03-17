@@ -45,6 +45,8 @@ function updateMode() {
 }
 </script>
 
+<button id="check_btn">Check</button>
+
 Current user:<span id="user_id"></span>
 <div class="col-md-3">
   <div class="card">

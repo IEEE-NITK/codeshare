@@ -46,6 +46,10 @@ defmodule Codeshare.CRDT do
     Agent.get(__MODULE__, & &1)
   end
 
+  def get_string() do
+    Agent.get(__MODULE__, & convert_to_string(&1))
+  end
+
   defp remote_insert(character) do
     Agent.update(__MODULE__, fn crdt -> insert_character(crdt, character) end)
   end
@@ -116,7 +120,7 @@ defmodule Codeshare.CRDT do
     if Character.is_greater(last_ch, character) do
       insert_newline_on_line(first_line, character) ++ crdt
     else
-      [first_line | insert_character(crdt, character)]
+      [first_line | insert_newline(crdt, character)]
     end
   end
 
@@ -150,7 +154,25 @@ defmodule Codeshare.CRDT do
       [[_ | line2] | crdt] = crdt
       [line1++line2 | crdt]
     else
-      [first_line | insert_character(crdt, character)]
+      [first_line | delete_newline(crdt, character)]
+    end
+  end
+
+  defp convert_to_string(crdt) do
+    if crdt == [] do
+      ""
+    else
+      [first_line | crdt] = crdt
+      "#{convert_line_to_string(first_line)}\n#{convert_to_string(crdt)}"
+    end
+  end
+
+  defp convert_line_to_string(line) do
+    [first_ch | line] = line
+    if line == [] do
+      "#{Character.to_string(first_ch)}"
+    else
+      "#{Character.to_string(first_ch)}, #{convert_line_to_string(line)}"
     end
   end
 

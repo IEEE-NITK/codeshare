@@ -34,7 +34,7 @@ defmodule CodeshareWeb.RoomChannel do
 
     # Update server-side CRDT
     CRDT.put(payload)
-    IO.inspect CRDT.get()
+    # IO.inspect CRDT.get()
 
     editor = %Codeshare.Editor{}
     changeset = Codeshare.Editor.changeset(editor, %{data: payload})
@@ -47,6 +47,19 @@ defmodule CodeshareWeb.RoomChannel do
     payload = Map.put(payload, "user_id", socket.assigns.user_id)
     broadcast(socket, "updateCursor", payload)
     {:noreply, socket}
+  end
+
+  def handle_in("check", payload, socket) do
+    IO.puts "CRDT: #{socket.assigns.user_id}:"
+    IO.puts payload["value"]
+    IO.puts "CRDT: Server:"
+    IO.puts CRDT.get_string()
+
+    if payload["value"] == CRDT.get_string() do
+      {:reply, {:ok, %{"flag" => true}}, socket}
+    else
+      {:reply, {:ok, %{"flag" => false}}, socket}
+    end
   end
 
   def terminate(_ , socket) do
