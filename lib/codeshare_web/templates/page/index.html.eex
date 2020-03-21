@@ -55,3 +55,19 @@ Current user: <span id="my_id" style="font-weight:bold"></span>
     </div>
   </div>
 </div>
+
+<style>
+.output{
+  background-color:#FCE8AE;
+  border: 2px solid black;
+  border-radius:5px;
+  padding:50px;
+  margin:20px;
+}
+</style>
+<div >
+  <h2>OUTPUT</h2>
+  <div class="output">
+    <samp id="compile_result">Hello World</samp>  
+  </div>
+</div>

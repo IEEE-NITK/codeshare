@@ -18,7 +18,7 @@ defmodule CodeshareWeb.RoomChannel do
 
   def handle_info(:after_join, socket) do
     push(socket, "presence_state", Presence.list(socket))
-    {:ok, _} = Presence.track(socket, "user_id:#{socket.assigns.user_id}", %{user_id: socket.assigns.user_id})
+    {:ok, _} = Presence.track(socket, "user_id:#{socket.assigns.user_id}", %{user_id: socket.assigns.user_id,username: socket.assigns.username})
     {:noreply, socket}
   end
 
@@ -38,7 +38,7 @@ defmodule CodeshareWeb.RoomChannel do
     IO.inspect payload
     {:ok, output} = File.read(user_id_string <> "/output") #TODO: handle :error
     System.cmd("rm", ["-rf", user_id_string])
-    {:reply, {:ok, Map.put(payload, "output", "OUTPUT:\n" <> output)}, socket}
+    {:reply, {:ok, Map.put(payload, "output",output)}, socket}
   end
 
   # It is also common to receive messages from the client and
