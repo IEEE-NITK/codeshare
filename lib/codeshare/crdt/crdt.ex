@@ -1,4 +1,7 @@
 defmodule Codeshare.CRDT do
+  @moduledoc """
+  Manages the server-side CRDT
+  """
   alias __MODULE__
   use Agent
   alias Codeshare.{Character, Identifier}
@@ -27,6 +30,10 @@ defmodule Codeshare.CRDT do
     # Need another process to map session id with corresponding server crdt pid
   end
 
+  @doc """
+  Put payload data recived from channel
+  into CRDT
+  """
   def put(payload) do
     character = Character.to_struct(payload["character"])
     case Map.get(payload, "type") do
@@ -42,13 +49,21 @@ defmodule Codeshare.CRDT do
     # Agent.update(__MODULE__, fn list -> [payload | list] end)
   end
 
+  @doc """
+  Get CRDT data
+  """
   def get() do
     Agent.get(__MODULE__, & &1)
   end
 
+  @doc """
+  Get CRDT string representation
+  """
   def get_string() do
     Agent.get(__MODULE__, & convert_to_string(&1))
   end
+
+  # Helper functions
 
   defp remote_insert(character) do
     Agent.update(__MODULE__, fn crdt -> insert_character(crdt, character) end)
