@@ -6,6 +6,9 @@ defmodule CodeshareWeb.RoomChannel do
 
   def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
+      # Add CRDT process
+      CRDT.Registry.create(CRDT.Registry, room_id)
+      
       query = from entry in "editor_state",
             select: entry.data,
             where: entry.room_id == ^(room_id)
@@ -47,7 +50,7 @@ defmodule CodeshareWeb.RoomChannel do
   def handle_in("shout", payload, socket) do
 
     # Update server-side CRDT
-    CRDT.put(payload)
+    CRDT.Registry.put(CRDT.Registry, socket.assigns.room_id, payload)
     # IO.inspect CRDT.get()
 
     editor = %Codeshare.Editor{}
@@ -67,9 +70,9 @@ defmodule CodeshareWeb.RoomChannel do
     IO.puts "CRDT: #{socket.assigns.user_id}:"
     IO.puts payload["value"]
     IO.puts "CRDT: Server:"
-    IO.puts CRDT.get_string()
+    IO.puts CRDT.Registry.get_string(CRDT.Registry, socket.assigns.room_id)
 
-    if payload["value"] == CRDT.get_string() do
+    if payload["value"] == CRDT.Registry.get_string(CRDT.Registry, socket.assigns.room_id) do
       {:reply, {:ok, %{"flag" => true}}, socket}
     else
       {:reply, {:ok, %{"flag" => false}}, socket}

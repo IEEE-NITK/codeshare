@@ -2,12 +2,11 @@ defmodule Codeshare.CRDT do
   @moduledoc """
   Manages the server-side CRDT
   """
-  alias __MODULE__
   use Agent
   alias Codeshare.{Character, Identifier}
 
   # [] arg required by supervisor
-  def start_link([]) do
+  def start_link(_opts) do
     fn -> [[
       %Character{
         ch: "",
@@ -24,7 +23,7 @@ defmodule Codeshare.CRDT do
           }]
       }
     ]]
-    end |> Agent.start_link(name: __MODULE__)
+    end |> Agent.start_link()
     # TODO: Registered with module name, which doesn't allow server crdt per session
     # (It allows for only one server crdt process)
     # Need another process to map session id with corresponding server crdt pid
@@ -34,51 +33,50 @@ defmodule Codeshare.CRDT do
   Put payload data recived from channel
   into CRDT
   """
-  def put(payload) do
+  def put(crdt, payload) do
     character = Character.to_struct(payload["character"])
     case Map.get(payload, "type") do
       "input" -> 
-        remote_insert(character)
+        remote_insert(crdt, character)
       "delete" ->
-        remote_delete(character)
+        remote_delete(crdt, character)
       "inputnewline" ->
-        remote_insert_newline(character)
+        remote_insert_newline(crdt, character)
       "deletenewline" ->
-        remote_delete_newline(character)
+        remote_delete_newline(crdt, character)
     end
-    # Agent.update(__MODULE__, fn list -> [payload | list] end)
   end
 
   @doc """
   Get CRDT data
   """
-  def get() do
-    Agent.get(__MODULE__, & &1)
+  def get(crdt) do
+    Agent.get(crdt, & &1)
   end
 
   @doc """
   Get CRDT string representation
   """
-  def get_string() do
-    Agent.get(__MODULE__, & convert_to_string(&1))
+  def get_string(crdt) do
+    Agent.get(crdt, & convert_to_string(&1))
   end
 
   # Helper functions
 
-  defp remote_insert(character) do
-    Agent.update(__MODULE__, fn crdt -> insert_character(crdt, character) end)
+  defp remote_insert(crdt, character) do
+    Agent.update(crdt, fn crdt -> insert_character(crdt, character) end)
   end
 
-  defp remote_delete(character) do
-    Agent.update(__MODULE__, fn crdt -> delete_character(crdt, character) end)
+  defp remote_delete(crdt, character) do
+    Agent.update(crdt, fn crdt -> delete_character(crdt, character) end)
   end
 
-  defp remote_insert_newline(character) do
-    Agent.update(__MODULE__, fn crdt -> insert_newline(crdt, character) end)
+  defp remote_insert_newline(crdt, character) do
+    Agent.update(crdt, fn crdt -> insert_newline(crdt, character) end)
   end
 
-  defp remote_delete_newline(character) do
-    Agent.update(__MODULE__, fn crdt -> delete_newline(crdt, character) end)
+  defp remote_delete_newline(crdt, character) do
+    Agent.update(crdt, fn crdt -> delete_newline(crdt, character) end)
   end
 
   defp insert_character(crdt, character) do
