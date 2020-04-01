@@ -277,3 +277,14 @@ return `
     </div>
 `
 }
+
+// Check if local CRDT consistent with server CRDT
+var check_btn = document.getElementById("check_btn");
+check_btn.onclick = function() {
+    channel.push("check", {
+        value: crdt.toString()
+    }).receive("ok", resp => {
+        console.log(`Response: ${resp["flag"]}`)
+    })
+}
+

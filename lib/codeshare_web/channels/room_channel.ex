@@ -2,9 +2,18 @@ defmodule CodeshareWeb.RoomChannel do
   use CodeshareWeb, :channel
   import Ecto.Query, only: [from: 2]
   alias CodeshareWeb.Presence
+  alias Codeshare.CRDT
 
   def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
+      # Add CRDT process
+      CRDT.Registry.create(CRDT.Registry, room_id)
+
+      # Print active sessions
+      sessions = CRDT.Registry.get_sessions(CRDT.Registry)
+      IO.puts "Active sessions"
+      IO.inspect sessions
+      
       query = from entry in "editor_state",
             select: entry.data,
             where: entry.room_id == ^(room_id)
@@ -44,6 +53,11 @@ defmodule CodeshareWeb.RoomChannel do
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (room:lobby).
   def handle_in("shout", payload, socket) do
+
+    # Update server-side CRDT
+    CRDT.Registry.put(CRDT.Registry, socket.assigns.room_id, payload)
+    # IO.inspect CRDT.get()
+
     editor = %Codeshare.Editor{}
     changeset = Codeshare.Editor.changeset(editor, %{data: payload, room_id: socket.assigns.room_id})
     Codeshare.Repo.insert(changeset)
@@ -57,6 +71,19 @@ defmodule CodeshareWeb.RoomChannel do
     {:noreply, socket}
   end
 
+  def handle_in("check", payload, socket) do
+    IO.puts "CRDT: #{socket.assigns.user_id}:"
+    IO.puts payload["value"]
+    IO.puts "CRDT: Server:"
+    IO.puts CRDT.Registry.get_string(CRDT.Registry, socket.assigns.room_id)
+
+    if payload["value"] == CRDT.Registry.get_string(CRDT.Registry, socket.assigns.room_id) do
+      {:reply, {:ok, %{"flag" => true}}, socket}
+    else
+      {:reply, {:ok, %{"flag" => false}}, socket}
+    end
+  end
+
   def terminate(_ , socket) do
     # When last active channel is terminating, 
     # empty the database
@@ -64,6 +91,10 @@ defmodule CodeshareWeb.RoomChannel do
       query = from editor in "editor_state",
             select: editor.data
       Codeshare.Repo.delete_all(query)
+
+      # Stop CRDT process
+      CRDT.Registry.stop(CRDT.Registry, socket.assigns.room_id)
+      IO.puts "Session #{String.slice(socket.assigns.room_id, 0..6)} terminated"
     end
     :ok
   end

@@ -14,7 +14,10 @@ defmodule Codeshare.Application do
       CodeshareWeb.Endpoint,
       # Starts a worker by calling: Codeshare.Worker.start_link(arg)
       # {Codeshare.Worker, arg},
-      CodeshareWeb.Presence
+      # Start Presence
+      CodeshareWeb.Presence,
+      # Start CRDT Supervisor
+      Codeshare.CRDT.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
