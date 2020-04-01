@@ -8,6 +8,11 @@ defmodule CodeshareWeb.RoomChannel do
     if authorized?(payload) do
       # Add CRDT process
       CRDT.Registry.create(CRDT.Registry, room_id)
+
+      # Print active sessions
+      sessions = CRDT.Registry.get_sessions(CRDT.Registry)
+      IO.puts "Active sessions"
+      IO.inspect sessions
       
       query = from entry in "editor_state",
             select: entry.data,
@@ -86,6 +91,10 @@ defmodule CodeshareWeb.RoomChannel do
       query = from editor in "editor_state",
             select: editor.data
       Codeshare.Repo.delete_all(query)
+
+      # Stop CRDT process
+      CRDT.Registry.stop(CRDT.Registry, socket.assigns.room_id)
+      IO.puts "Session #{String.slice(socket.assigns.room_id, 0..6)} terminated"
     end
     :ok
   end
