@@ -61,6 +61,10 @@ defmodule Codeshare.CRDT do
     Agent.get(crdt, & convert_to_string(&1))
   end
 
+  def stop(crdt) do
+    Agent.stop(crdt)
+  end
+
   # Helper functions
 
   defp remote_insert(crdt, character) do
