@@ -89,8 +89,8 @@ channel.join()
         // console.log("Joined successfully", resp)
         console.log("Joined successfully") 
         my_id = resp.my_id
-        document.getElementById("my_id").textContent = username
-        document.getElementById("my_id").style.color = "#" + my_id.toString(16)
+        document.getElementById("my_username").textContent = username
+        document.getElementById("my_username").style.color = "#" + my_id.toString(16)
         var ops = resp.ops
         for(var i = 0; i < ops.length; i++) {
             applyOp(ops[i])
