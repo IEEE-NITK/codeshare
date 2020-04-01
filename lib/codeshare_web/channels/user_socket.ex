@@ -19,9 +19,9 @@ defmodule CodeshareWeb.UserSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.%{"username"=>username}assign(socket, :username, "HARSH")
-  def connect(%{"username"=>username}, socket, _connect_info) do
-    
-    socket=assign(socket,:username,username)
+  def connect(params, socket, _connect_info) do
+    #%{"username"=>username}
+    socket=assign(socket,:username,params["username"])
     socket = assign(socket, :user_id, Enum.random(0..16777216))
     {:ok,socket }
   end
