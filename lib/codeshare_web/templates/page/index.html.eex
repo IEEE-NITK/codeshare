@@ -4,8 +4,55 @@
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/lib/codemirror.js") %>"></script>
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/addon/mode/loadmode.js") %>"></script>
 
-<textarea id="editor"></textarea>
+<div>
+  <div class="editor-div left">
+      <textarea id="editor"></textarea>
+      <select id="language" onChange="updateMode()">
+        <option value="python" selected>Python</option>
+        <option value="text/x-csrc">C</option>
+        <option value="text/x-c++src">C++</option>
+        <option value="text/x-java">Java</option>
+      </select>
+      <button id="compile_btn">Compile</button>
+      Current user: <span id="my_username" style="font-weight:bold"></span>
+              <h5 class="card-header text-white bg-secondary">Online:</h5>
+        <div id="online-users"></div>
 
+  </div>
+  <div class="users-list right">
+  <div >
+        <h2>OUTPUT</h2>
+        <div class="output">
+          <samp id="compile_result">Hello World</samp>  
+        </div>
+      </div>
+
+  </div>
+  <br style="clear:both;"/>
+<div>
+<style>
+.editor-div{
+  width:50%;
+  padding:0.2%;
+}
+.users-list{
+  width:50%;
+  padding:0.2%;
+}
+.left{
+  float:left;
+}
+.right{
+  float:right;  
+}
+.output{
+  background-color:#FCE8AE;
+  border: 2px solid black;
+  border-radius:5px;
+  padding:50px;
+  margin:20px;
+}
+</style>
 <script>
 var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
   lineNumbers: true,
@@ -17,16 +64,9 @@ CodeMirror.requireMode("python", function() {
   cm.setOption("mode", "python")
   CodeMirror.autoLoadMode(cm, "python")
 })
-</script>
 
-<select id="language" onChange="updateMode()">
-  <option value="python" selected>Python</option>
-  <option value="text/x-csrc">C</option>
-  <option value="text/x-c++src">C++</option>
-  <option value="text/x-java">Java</option>
-</select>
 
-<script>
+
 function updateMode() {
   var language = document.getElementById("language").value
   console.log(language)
@@ -44,30 +84,4 @@ function updateMode() {
 }
 </script>
 
-<button id="compile_btn">Compile</button>
 
-Current user: <span id="my_username" style="font-weight:bold"></span>
-<div class="col-md-3">
-  <div class="card">
-    <h5 class="card-header text-white bg-secondary">Online:</h5>
-    <div class="card-body">
-      <div id="online-users"></div>
-    </div>
-  </div>
-</div>
-
-<style>
-.output{
-  background-color:#FCE8AE;
-  border: 2px solid black;
-  border-radius:5px;
-  padding:50px;
-  margin:20px;
-}
-</style>
-<div >
-  <h2>OUTPUT</h2>
-  <div class="output">
-    <samp id="compile_result">Hello World</samp>  
-  </div>
-</div>
