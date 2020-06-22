@@ -4,8 +4,58 @@
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/lib/codemirror.js") %>"></script>
 <script type="text/javascript" src="<%= Routes.static_path(@conn, "/codemirror/addon/mode/loadmode.js") %>"></script>
 
-<textarea id="editor"></textarea>
-
+<div>
+  <div class="editor-div left">
+    <div id="code-area">
+      <textarea id="editor"></textarea>
+      <select id="language" onChange="updateMode()">
+        <option value="python" selected>Python</option>
+        <option value="text/x-csrc">C</option>
+        <option value="text/x-c++src">C++</option>
+        <option value="text/x-java">Java</option>
+      </select>
+      <button id="compile_btn">Compile</button>
+    </div>
+      
+    <div id="output-area">
+          <div class="output">
+            <samp id="compile_result">Hello World</samp>  
+          </div>
+    </div>
+  </div>
+  <div class="users-list right">
+    Current user: <span id="my_username" style="font-weight:bold"></span>
+    <h5 class="card-header text-white bg-secondary">Online:</h5>
+    <div id="online-users"></div>
+  </div>
+  <br style="clear:both;"/>
+<div>
+<style>
+.editor-div{
+  width:80%;
+  height:100%;
+  padding:0.2%;
+}
+.users-list{
+  width:20%;
+  padding:0.2%;
+}
+.left{
+  float:left;
+}
+.right{
+  float:right;  
+}
+.output{
+  height:500px;
+  background-color:#FCE8AE;
+  border: 2px solid black;
+  border-radius:5px;
+  padding:50px;
+  margin:20px;
+  
+}
+</style>
 <script>
 var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
   lineNumbers: true,
@@ -17,16 +67,27 @@ CodeMirror.requireMode("python", function() {
   cm.setOption("mode", "python")
   CodeMirror.autoLoadMode(cm, "python")
 })
-</script>
 
-<select id="language" onChange="updateMode()">
-  <option value="python" selected>Python</option>
-  <option value="text/x-csrc">C</option>
-  <option value="text/x-c++src">C++</option>
-  <option value="text/x-java">Java</option>
-</select>
+document.getElementById("output-area").style.display = "none";
 
-<script>
+
+function toggleVisibilty(id){
+  var cd = document.getElementById("code-area");
+  var op = document.getElementById("output-area");
+  if(id=="show-code"){
+    if (cd.style.display === "none") {
+      cd.style.display = "block";  
+      op.style.display = "none";
+    } 
+  }
+  else{
+    if (op.style.display === "none") {
+      op.style.display = "block";
+      cd.style.display = "none";
+    }
+  }
+}
+
 function updateMode() {
   var language = document.getElementById("language").value
   console.log(language)
@@ -41,17 +102,8 @@ function updateMode() {
     cm.setOption("mode", language)
     CodeMirror.autoLoadMode(cm, mode)
   })
+
 }
 </script>
 
-<button id="compile_btn">Compile</button>
 
-Current user: <span id="my_id" style="font-weight:bold"></span>
-<div class="col-md-3">
-  <div class="card">
-    <h5 class="card-header text-white bg-secondary">Online:</h5>
-    <div class="card-body">
-      <div id="online-users"></div>
-    </div>
-  </div>
-</div>

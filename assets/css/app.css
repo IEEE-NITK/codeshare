@@ -1,3 +1,126 @@
 /* This file is for your main application css. */
 
 @import "./phoenix.css";
+
+/* header{
+    background-color: aqua;
+}
+header::after{
+    content: '';
+    display: table;
+    clear: both;
+}
+.phx-logo{
+    float:left
+}
+nav{
+    float: right;
+}
+nav ul{
+    list-style: none;
+}
+nav li{
+    float: left;
+    padding: 100px ;   
+} */
+
+
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v7.0.29,
+* Autoprefixer: v9.7.6
+* Browsers: last 4 version
+*/
+
+* {
+    margin: 0;
+}
+
+body {
+    font: 16px "Roboto", sans-serif;
+}
+
+header {
+    background: #c31432;
+    background: -webkit-gradient(linear, left top, right top, from(#240b36), to(#c31432));
+    background: -o-linear-gradient(left, #240b36, #c31432);
+    background: linear-gradient(to right, #240b36, #c31432);
+    padding: 10px 0;
+}
+
+.container {
+    /*   width: 70%; */
+    margin: 0 auto;
+}
+
+.btn {
+    background-color: #270B36;
+    ;
+    padding: 8px 0;
+    text-align: center;
+    width: 90px;
+}
+
+.btn:hover {
+    background: none;
+    border: 2px solid #4D0D35;
+    color: #4D0D35;
+}
+
+.sign-up a:hover {
+    color: #270B36;
+}
+
+#brand {
+    margin: 0 20px;
+}
+
+#brand span {
+    font: 30px "Abril Fatface", cursive;
+}
+
+#brand i {
+    font-size: 2em;
+    margin-right: 5px;
+}
+
+nav {
+    color: #ecf0f1;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+}
+
+@media(max-width: 767px) {
+    nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    nav .btn {
+        display: none;
+    }
+}
+
+@media(max-width: 600px) {
+    #brand,
+    nav li {
+        margin-bottom: 5px;
+    }
+}
+
+h1 {
+    size: 54px;
+    color: #ecf0f1;
+    padding-left: 20px;
+}

@@ -18,10 +18,12 @@ defmodule CodeshareWeb.UserSocket do
   # To deny connection, return `:error`.
   #
   # See `Phoenix.Token` documentation for examples in
-  # performing token verification on connect.
-  def connect(_params, socket, _connect_info) do
+  # performing token verification on connect.%{"username"=>username}assign(socket, :username, "HARSH")
+  def connect(params, socket, _connect_info) do
+    #%{"username"=>username}
+    socket=assign(socket,:username,params["username"])
     socket = assign(socket, :user_id, Enum.random(0..16777216))
-    {:ok, socket}
+    {:ok,socket }
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

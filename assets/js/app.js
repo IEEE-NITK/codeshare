@@ -13,12 +13,16 @@ import {Socket, Presence} from "phoenix"
 
 // Import local files
 import crdt from "./crdt"
-import socket from "./socket"
 import crypto from "crypto"
 
+
+var username="harsh";//prompt("Enter your name")
+let socket=new Socket("/socket",{ params :{ username : username } } )
+socket.connect()
 var cm = window.cm // cm: CodeMirror
 
 var compile_btn = window.compile_btn
+var compile_result = window.compile_result
 compile_btn.onclick = function(){
     var language = document.getElementById("language").value
     var compile_lang
@@ -33,7 +37,11 @@ compile_btn.onclick = function(){
         text: crdt.getText(),
         language: compile_lang
     }).receive("ok", reply => {
+        compile_result.innerHTML=reply.output
         console.log(reply.output)
+    }).receive("timeout",res=>{
+        compile_result.innerHTML="Timeout"
+        console.log("Timeout")
     })
 }
 
@@ -81,8 +89,8 @@ channel.join()
         // console.log("Joined successfully", resp)
         console.log("Joined successfully") 
         my_id = resp.my_id
-        document.getElementById("my_id").textContent = my_id
-        document.getElementById("my_id").style.color = "#" + my_id.toString(16)
+        document.getElementById("my_username").textContent = username
+        document.getElementById("my_username").style.color = "#" + my_id.toString(16)
         var ops = resp.ops
         for(var i = 0; i < ops.length; i++) {
             applyOp(ops[i])
@@ -271,9 +279,10 @@ const renderOnlineUsers = function(presences) {
 }
 
 const onlineUserTemplate = function(user) {
+    console.log(user)
 return `
-    <div id="online-user-${user.user_id}">
-    <strong><font color="#${user.user_id.toString(16)}">${user.user_id}</font></strong>
+    <div id="online-user-${user.username}">
+    <strong><font color="#${user.user_id.toString(16)}">${user.username}</font></strong>
     </div>
 `
 }
