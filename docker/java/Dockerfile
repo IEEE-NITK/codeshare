@@ -1,4 +1,4 @@
-FROM iron/java:1.8-dev
+FROM openjdk:7-alpine
 
 WORKDIR /codeshare-sandbox
 
