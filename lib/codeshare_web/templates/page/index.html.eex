@@ -6,28 +6,31 @@
 
 <div>
   <div class="editor-div left">
-    <div id="code-area">
-      <textarea id="editor"></textarea>
-      <select id="language" onChange="updateMode()">
+    <div id="code-area">  
+       <select id="language" onChange="updateMode()">
         <option value="python" selected>Python</option>
         <option value="text/x-csrc">C</option>
         <option value="text/x-c++src">C++</option>
         <option value="text/x-java">Java</option>
-      </select>
+      </select> 
+      <textarea id="editor"></textarea>
+      <br>
+      <br>
+      
+      
       <button id="compile_btn">Compile</button>
     </div>
       
-    <div id="output-area">
-          <div class="output">
+    <div id="output-area"> 
+         
+          <div class="output"> 
+          <h1>OUTPUT AREA</h1>
             <samp id="compile_result">Hello World</samp>  
           </div>
     </div>
   </div>
   <div class="users-list right">
-    Current user: <span id="my_username" style="font-weight:bold"></span>
-    <h5 class="card-header text-white bg-secondary">Online:</h5>
-    <div id="online-users"></div>
-  </div>
+   </div> 
   <br style="clear:both;"/>
 <div>
 <style>
@@ -51,24 +54,32 @@
   background-color:#FCE8AE;
   border: 2px solid black;
   border-radius:5px;
-  padding:50px;
-  margin:20px;
+  padding:20px;
+  margin:20px; 
+  width: 1442px
   
+} 
+
+.CodeMirror
+{
+
+  height : 600px
 }
 </style>
 <script>
 var cm = CodeMirror.fromTextArea(document.getElementById("editor"), {
   lineNumbers: true,
-  // theme: "3024-night",
+   //theme: "3024-night", 
+  //border: true,
   theme: "darcula",
-})
+}) 
 CodeMirror.modeURL = "<%= Routes.static_path(@conn, "/codemirror/mode/%N/%N.js") %>"
 CodeMirror.requireMode("python", function() {
   cm.setOption("mode", "python")
   CodeMirror.autoLoadMode(cm, "python")
 })
 
-document.getElementById("output-area").style.display = "none";
+
 
 
 function toggleVisibilty(id){
