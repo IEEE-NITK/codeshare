@@ -30,7 +30,10 @@
     </div>
   </div>
   <div class="users-list right">
-   </div> 
+    Current user: <span id="my_username" style="font-weight:bold"></span>
+    <h5 class="card-header text-white bg-secondary">Online:</h5>
+    <div id="online-users"></div>
+  </div>
   <br style="clear:both;"/>
 <div>
 <style>
