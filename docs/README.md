@@ -1,4 +1,4 @@
-# Codeshare
+# CodeShare
 
 CodeShare is a web-based real-time code sharing tool. It empowers developers to collaborate remotely during hackathons, contests or for a project. It can also be potentially used in mentorship programs to live share code. The tool also compiles and runs code.
 
@@ -62,7 +62,7 @@ At a high-level, it can be interpreted as:<br />
 
 i.e. 'C' has index 1, 'H' has index 1.5, 'A' has index 2 and 'T' has index 3.
 
-Using a data structure like this will consume more space for each client but will help us in maintaining *Commutativity during insertion and deletion* and *Idempotency during deletions*. For a character inserion, a new identifier list is generated and for a charater deletion, the list is returned back to the avaiable pool.
+Using a data structure like this will consume more space for each client but will help us in maintaining *Commutativity during insertion and deletion* and *Idempotency during deletions*. For a character insertion, a new identifier list is generated and for a character deletion, the list is returned back to the avaiable pool.
 
 ## Results:
 
