@@ -14,10 +14,6 @@
       <div id="brand">
         <p><i class="fas fa-anchor"></i><span>Codeshare</span></p>
       </div>
-      <ul>
-      <li id="show-code" onclick="toggleVisibilty(id)">Code</li>
-      <li id="show-output" onclick="toggleVisibilty(id)"style="display=none">Output</li>
-      </ul>
     </nav>
   </div>
   </header>
