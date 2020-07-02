@@ -1,4 +1,4 @@
-FROM iron/python
+FROM python:3.7-alpine
 
 WORKDIR /codeshare-sandbox
 

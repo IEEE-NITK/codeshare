@@ -16,7 +16,7 @@ import crdt from "./crdt"
 import crypto from "crypto"
 
 
-var username="harsh";//prompt("Enter your name")
+var username=prompt("Enter your name")
 let socket=new Socket("/socket",{ params :{ username : username } } )
 socket.connect()
 var cm = window.cm // cm: CodeMirror
